@@ -1,0 +1,422 @@
+<%-include('../layout/user/indexHeader')%>	
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Listing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+    --primary-color: #1b1d1c;
+    --secondary-color: #efb033;
+    --text-gray: #666;
+    --border-color: #eee;
+    --background-gray: #fafafa;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-gray);
+    margin: 0;
+    padding: 0;
+}
+
+/* Search Section */
+.search-container {
+    background-color: white;
+    padding: 30px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-input {
+    border-radius: 25px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    box-shadow: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.search-btn {
+    border-radius: 0 25px 25px 0;
+    padding: 12px 25px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.search-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Filter Sidebar */
+.filter-section {
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    background-color: white;
+    height: 100%;
+}
+
+.filter-heading {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.form-check-label {
+    font-size: 0.9em;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-check-input {
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.form-check-input:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.filter-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 20px 0;
+}
+
+.count-badge {
+    background-color: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: var(--text-gray);
+}
+
+/* Product Card */
+.product-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    background: white;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sale-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.product-img {
+    height: 250px;
+    object-fit: contain;
+    padding: 20px;
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.product-title {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.product-brand {
+    color: var(--text-gray);
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.current-price {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.save-price {
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+/* Sorting Section */
+.sort-select {
+    border-color: var(--border-color);
+    color: var(--text-gray);
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.sort-select:focus {
+    border-color: var(--primary-color);
+}
+
+/* Results Info */
+.results-info {
+    color: var(--text-gray);
+    font-size: 0.9em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-section {
+        border-right: none;
+        margin-bottom: 20px;
+    }
+
+    .product-card {
+        margin-bottom: 20px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Search Section -->
+    <div class="search-container">
+        <div class="container">
+            <h1 class="text-center mb-4">SEARCH</h1>
+            <div class="col-md-8 mx-auto">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" placeholder="Search products...">
+                    <button class="btn search-btn" type="button">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3 col-md-4">
+                <div class="filter-section">
+                    <!-- Gender Filter -->
+                    <!-- <div class="mb-4">
+                        <h5 class="filter-heading">Gender</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="men">
+                            <label class="form-check-label d-flex justify-content-between" for="men">
+                                Men <span class="count-badge">920</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="women">
+                            <label class="form-check-label d-flex justify-content-between" for="women">
+                                Women <span class="count-badge">786</span>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="unisex">
+                            <label class="form-check-label d-flex justify-content-between" for="unisex">
+                                Unisex <span class="count-badge">23</span>
+                            </label>
+                        </div>
+                    </div> -->
+
+                    <div class="filter-divider"></div>
+
+                    <!-- Brand Filter -->
+                    <div class="mb-4">
+                        <h5 class="filter-heading">Category</h5>
+                        <% categories.forEach((category) => { %>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input category-filter" type="checkbox" id="<%= category._id %>" data-category-id="<%= category._id %>">
+                                <label class="form-check-label" for="<%= category._id %>">
+                                    <%= category.name %>
+                                </label>
+                            </div>
+                        <% }) %>
+                    </div>
+                    
+                    
+                    
+                    <!-- <div class="mb-4">
+                        <h5 class="filter-heading">Brand</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="dolce">
+                            <label class="form-check-label d-flex justify-content-between" for="dolce">
+                                Dolce & Gabbana <span class="count-badge">150</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="armani">
+                            <label class="form-check-label d-flex justify-content-between" for="armani">
+                                Giorgio Armani <span class="count-badge">125</span>
+                            </label>
+                        </div>
+                    </div> -->
+
+                    <div class="filter-divider"></div>
+
+                    <!-- Size Filter -->
+                    <!-- <div class="mb-4">
+                        <h5 class="filter-heading">Size</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="size100">
+                            <label class="form-check-label d-flex justify-content-between" for="size100">
+                                100ml <span class="count-badge">458</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="size50">
+                            <label class="form-check-label d-flex justify-content-between" for="size50">
+                                50ml <span class="count-badge">325</span>
+                            </label>
+                        </div>
+                    </div> -->
+
+                    <div class="filter-divider"></div>
+
+                    <!-- Price Filter -->
+                    <div class="mb-4">
+                        <h5 class="filter-heading">Price Range</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input price-filter" type="radio" name="priceRange" id="price1" value="under1000">
+                            <label class="form-check-label" for="price1">
+                                Under ₹1,000
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input price-filter" type="radio" name="priceRange" id="price2" value="1000-1500">
+                            <label class="form-check-label" for="price2">
+                                ₹1,000 - ₹1,500
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input price-filter" type="radio" name="priceRange" id="price3" value="above1500">
+                            <label class="form-check-label" for="price3">
+                                Above ₹1,500
+                            </label>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="col-lg-9 col-md-8">
+                <div class="p-4">
+                    <!-- Results Header -->
+                    <!-- Product Grid -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="results-info">1907 results found</span>
+                <select class="form-select sort-select w-auto" id="sort-select">
+                    <option value="popularity">Popularity</option>
+                    <option value="priceLowToHigh">Price: Low to High</option>
+                    <option value="priceHighToLow">Price: High to Low</option>
+                    <option value="avgRatings">Average Ratings</option>
+                    <option value="featured">Featured</option>
+                    <option value="aToZ">A - Z</option>
+                    <option value="zToA">Z - A</option>
+                </select>
+            </div>
+
+
+                    <!-- Product Grid -->
+                    <div class="row g-4">
+                        <% products.forEach((pro) => { %>
+                            <div class="col-lg-4 col-md-6">
+                                <div class="card product-card">
+                                    <span class="sale-badge">Sale</span>
+                                    <a href="/loadProductPage/<%=pro._id%>"><img src="/uploads/<%= pro.image[0] %>" alt=""></a>
+                                    <div class="card-body">
+                                        <h5 class="product-title"><%= pro.name %></h5>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="current-price ms-2">₹ <%= pro.price %></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.querySelectorAll('.category-filter').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const categoryId = this.getAttribute('data-category-id');
+                const isChecked = this.checked;
+    
+                if (isChecked) {
+                    window.location.href = `/shopPage?category=${categoryId}`;
+                } else {
+                    window.location.href = `/shopPage`;
+                }
+            });
+        });
+
+             document.getElementById('sort-select').addEventListener('change', function() {
+            const sortBy = this.value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sortBy);
+            window.location.href = url.toString();
+        });
+
+
+        document.querySelectorAll('.price-filter').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const priceRange = this.value; 
+            const url = new URL(window.location.href);
+            if (priceRange) {
+                url.searchParams.set('priceRange', priceRange);
+            } else {
+                url.searchParams.delete('priceRange');
+            }
+            window.location.href = url.toString(); 
+        });
+    });
+
+    </script>
+    
+</body>
+</html>
+

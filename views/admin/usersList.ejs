@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .btn-block,
+        .btn-unblock {
+            color: white;
+            width: 80px;
+            font-weight: bold;
+            border: none;
+        }
+
+        .btn-block {
+            background-color: #ff4d4d; /* Vibrant Red */
+        }
+
+        .btn-block:hover {
+            background-color: #ff3333; /* Darker Red on Hover */
+        }
+
+        .btn-unblock {
+            background-color: #4CAF50; /* Vibrant Green */
+        }
+
+        .btn-unblock:hover {
+            background-color: #45a049; /* Darker Green on Hover */
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .table {
+            border: 1px solid #dee2e6;
+        }
+
+        /* Table header background */
+        .table thead {
+            background-color: #676767; /* Dark grey */
+            color: white;
+        }
+
+        /* Alternate row colors */
+        .table tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+
+        /* Button status colors */
+        .status {
+            font-weight: bold;
+        }
+
+        .status.Active {
+            color: #28a745; /* Green for active status */
+        }
+
+        .status.Blocked {
+            color: #dc3545; /* Red for blocked status */
+        }
+
+        .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+    </style>
+</head>
+<body>
+    <%- include('../layout/admin/adminHeader') %>  <!-- Include the admin header if you have one -->
+
+    <div class="container mt-5">
+        <h2>User Management</h2>
+        <table class="table table-bordered table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th class="action-column">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach((user, index) => { %>
+                    <tr id="user-<%= user._id %>">
+                        <td><%= (currentPage - 1) * 5 + index + 1 %></td>
+                        <td><%= user.name %></td>
+                        <td><%= user.email %></td>
+                        <td><%= new Date(user.date).toLocaleDateString() %></td>
+                        <td class="status <%= user.status %>"><%= user.status %></td>
+                        <td class="action-buttons">
+                            <button class="btn btn-block" onclick="changeStatus('<%= user._id %>', 'Blocked')">Block</button>
+                            <button class="btn btn-unblock" onclick="changeStatus('<%= user._id %>', 'Active')">Unblock</button>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    
+        <!-- Pagination Links -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    </div>
+    
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script>
+        function changeStatus(userId, newStatus) {
+            Swal.fire({
+                title: `Are you sure you want to ${newStatus.toLowerCase()} this user?`,
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: newStatus === 'Blocked' ? '#ff4d4d' : '#4CAF50',
+                confirmButtonText: `Yes, ${newStatus}`,
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/changeStatus/${userId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const userRow = document.getElementById(`user-${userId}`);
+                            const statusCell = userRow.querySelector('.status');
+                            statusCell.textContent = data.status; 
+                            statusCell.classList.toggle('Blocked', newStatus === 'Blocked');
+                            statusCell.classList.toggle('Active', newStatus === 'Active');
+    
+                            if (newStatus === 'Blocked') {
+                                userRow.querySelector('.btn-block').disabled = true;
+                                userRow.querySelector('.btn-unblock').disabled = false;
+                            } else {
+                                userRow.querySelector('.btn-block').disabled = false;
+                                userRow.querySelector('.btn-unblock').disabled = true;
+                            }
+
+                            Swal.fire('Success', `User status changed to ${newStatus.toLowerCase()}`, 'success');
+                        } else {
+                            Swal.fire('Error', 'Failed to change user status', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error changing status:', error);
+                        Swal.fire('Error', 'Failed to change user status', 'error');
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire('Cancelled', 'User status change was cancelled', 'info');
+                }
+            });
+        }
+    </script>
+    
+</body>
+</html>

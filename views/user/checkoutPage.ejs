@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .address-section {
+            margin-bottom: 20px;
+        }
+        .address-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .address-card.selected {
+            border: 2px solid #efb033;
+        }
+        .address-card input {
+            margin-right: 10px;
+        }
+        .add-address-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background: #212322;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .summary-section {
+            margin-bottom: 20px;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .payment-section {
+            margin-bottom: 20px;
+        }
+        .payment-method {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .payment-method input {
+            margin-right: 10px;
+        }
+        .place-order-btn {
+            width: 100%;
+            padding: 15px;
+            background: #212322;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        /* .place-order-btn :hover{
+            background-color: #717271;
+        } */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+        .modal-content input {
+            width: calc(100% - 10px);
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .close-modal {
+            background: #ff4b4b;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .address-card {
+    display: flex; /* Use flexbox for consistent alignment */
+    justify-content: space-between; /* Space between address text and Edit button */
+    align-items: center; /* Vertically center-align all elements */
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative; /* Ensures Edit button placement */
+}
+
+.address-card span {
+    flex-grow: 1; /* Allow the address text to grow and take available space */
+    margin-right: 15px; /* Add spacing between the text and the button */
+    display: block; /* Ensures the text block stays consistent */
+    word-break: break-word; /* Prevents long words from overflowing */
+}
+
+.edit-address-btn {
+    position: static; /* Remove absolute positioning for better alignment */
+    padding: 8px 15px;
+    background-color: #1c1d1c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: auto; /* Push button to the far right of the flex container */
+}
+
+.edit-address-btn:hover {
+    background-color: #585958;
+}
+
+.edit-address-btn:focus {
+    outline: none;
+}
+
+/* Optional: Make address card responsive for small screens */
+@media (max-width: 600px) {
+    .address-card {
+        flex-direction: column; /* Stack elements vertically on smaller screens */
+        align-items: flex-start; /* Align items to the left */
+    }
+
+    .edit-address-btn {
+        margin-left: 0; /* Reset margin for better alignment on small screens */
+        margin-top: 10px; /* Add spacing between button and text */
+        width: 100%; /* Make the button full width */
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Checkout</h2>
+
+        <!-- Address Section -->
+        <div class="address-section">
+            <h3>Select Address</h3>
+            <% user.address.forEach((add) => { %>
+                <div class="address-card">
+                    <!-- Radio button for address selection -->
+                    <input type="radio" name="address" value="<%= add._id %>" id="address_<%= add._id %>">
+                    <label for="address_<%= add._id %>">
+                        <span><%= add.street %>, <%= add.city %>, <%= add.state %>, <%= add.pincode %>, <%= add.country %></span>
+                    </label>
+                    
+                    <!-- Edit Button for the address -->
+                    <button class="edit-address-btn" 
+                            data-id="<%= add._id %>" 
+                            data-street="<%= add.street %>" 
+                            data-city="<%= add.city %>" 
+                            data-state="<%= add.state %>" 
+                            data-pincode="<%= add.pincode %>" 
+                            data-country="<%= add.country %>">Edit</button>
+                </div>
+            <% }); %>
+        
+            <!-- Add New Address Button -->
+            <button class="add-address-btn">+ Add New Address</button>
+        </div>
+        
+
+        <!-- Add Address Modal -->
+        <div class="modal" id="add-address-modal">
+            <div class="modal-content">
+                <h3>Add New Address</h3>
+                <form id="add-address-form" data-address-id="<%= address._id %>">
+                    <input type="text" name="street" placeholder="Street Address" required />
+                    <input type="text" name="city" placeholder="City" required />
+                    <input type="text" name="state" placeholder="State" required />
+                    <input type="text" name="pincode" placeholder="Pincode" required />
+                    <input type="text" name="country" placeholder="Country" required />
+                    <button type="submit">Save</button>
+                    <button type="button" class="close-modal">Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Order Summary Section -->
+        <div class="summary-section">
+            <h3>Order Summary</h3>
+            <% cart.items.forEach((item) => { %>
+                <div class="summary-item">
+                    <span><%= item.productId.name %>:</span>
+                    <span><%= item.quantity %> x ₹<%= item.productId.price %></span>
+                </div>
+            <% }); %>
+            <hr />
+            <div class="summary-item">
+                <strong>Total:</strong>
+                <strong>₹<%= cart.grandTotal%></strong>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="payment-section">
+            <h3>Payment Method</h3>
+            <div class="payment-method">
+                <input type="radio" name="payment" id="COD" checked />
+                <label for="COD">Cash on Delivery</label>
+            </div>
+            <!-- <div class="payment-method">
+                <input type="radio" name="payment" id="Razorpay" />
+                <label for="Razorpay">Razorpay</label>
+            </div> -->
+        </div>
+
+        <!-- Place Order Button -->
+        <button class="place-order-btn">Place Order</button>
+    </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.querySelector('.add-address-btn').addEventListener('click', () => {
+        document.querySelector('#add-address-modal').style.display = 'flex';
+        // Clear any previous data from the form (for new address)
+        document.querySelector('#add-address-form').reset();
+        document.querySelector('#add-address-form').dataset.addressId = ''; // Reset the addressId
+    });
+
+    // Close the Add/Edit Address Modal
+    document.querySelector('.close-modal').addEventListener('click', () => {
+        document.querySelector('#add-address-modal').style.display = 'none';
+    });
+
+    // Edit Address - Open Modal with Existing Data
+    document.querySelectorAll('.edit-address-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const addressData = e.target.dataset;
+            
+            // Pre-fill the modal with the current address details
+            document.querySelector('#add-address-form [name="street"]').value = addressData.street;
+            document.querySelector('#add-address-form [name="city"]').value = addressData.city;
+            document.querySelector('#add-address-form [name="state"]').value = addressData.state;
+            document.querySelector('#add-address-form [name="pincode"]').value = addressData.pincode;
+            document.querySelector('#add-address-form [name="country"]').value = addressData.country;
+            
+            // Store the address ID in the modal for later use
+            document.querySelector('#add-address-form').dataset.addressId = addressData.id;
+
+            // Show the modal
+            document.querySelector('#add-address-modal').style.display = 'flex';
+        });
+    });
+
+    // Add/Edit Address Form Submission
+    document.querySelector('#add-address-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = Object.fromEntries(new FormData(e.target).entries());
+        const addressId = e.target.dataset.addressId; // Get the address ID if editing
+
+        // Determine whether it's an update or new address
+        const method = addressId ? 'PUT' : 'POST'; 
+        const url = addressId ? `/updateAddress/${addressId}` : '/addNewAddress'; 
+
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        });
+
+        if (response.ok) {
+            // SweetAlert Success
+            Swal.fire({
+                title: 'Success!',
+                text: addressId ? 'Address Updated Successfully!' : 'Address Added Successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload(); // Reload the page to reflect the changes
+            });
+        } else {
+            Swal.fire({
+                title: 'Failed!',
+                text: 'Failed to save address. Try again later.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        }
+    });
+
+    document.querySelector('.place-order-btn').addEventListener('click', async () => {
+    // Get the selected address
+    const selectedAddressElement = document.querySelector('input[name="address"]:checked');
+    
+    // Check if an address is selected
+    if (!selectedAddressElement) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Please select an address before placing the order.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return; // Stop execution if no address is selected
+    }
+
+    const selectedAddressId = selectedAddressElement.value;
+
+    // Get the selected payment method
+    const paymentMethodElement = document.querySelector('input[name="payment"]:checked');
+
+    if (!paymentMethodElement) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Please select a payment method before placing the order.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return; // Stop execution if no payment method is selected
+    }
+
+    const paymentMethod = paymentMethodElement.id;
+
+    try {
+        const response = await fetch('/order/place', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selectedAddressId, paymentMethod }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Redirect to success page
+            window.location.href = `/successOrder/${result.orderId}`;
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: `Failed to place order: ${result.message}`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong while placing the order. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+
+</script>
+
+</body>
+</html>

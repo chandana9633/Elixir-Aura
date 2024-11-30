@@ -1,0 +1,173 @@
+<%-include('../layout/admin/adminHeader')%>	
+<style>
+  .orders-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  
+  .orders-table th,
+  .orders-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .orders-table th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+  }
+  
+  .orders-table td {
+    vertical-align: middle;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary {
+    background-color: #1b1c1c;
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3e3f3f;
+  }
+  
+  .btn-danger {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c0392b;
+  }
+  
+  /* Style for the status dropdown */
+  .status-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    appearance: none;
+    cursor: pointer;
+  }
+  
+  .status-select:focus {
+    border-color: #1b1c1c;
+    box-shadow: 0 0 5px rgba(27, 28, 28, 0.5);
+    outline: none;
+  }
+  
+  .status-select option {
+    font-size: 14px;
+  }
+  
+  /* Add specific colors for each status */
+  .status-select option[value="Pending"] {
+    color: #f39c12;
+    font-weight: bold;
+  }
+  
+  .status-select option[value="Shipped"] {
+    color: #3498db;
+    font-weight: bold;
+  }
+  
+  .status-select option[value="Delivered"] {
+    color: #2ecc71;
+    font-weight: bold;
+  }
+  
+  .status-select option[value="Canceled"] {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+
+  .status-canceled {
+  color: #e74c3c;
+  font-weight: bold;
+}
+  </style>
+  
+  <div class="orders-container">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>#ID</th>
+          <th>Name</th>
+          <th>Total</th>
+          <th>Return Info</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td><%= order._id %></td>
+            <td><%= order.userName %></td>
+            <td><%= order.totalPrice %></td>
+            <td><%= order.returnReason %></td>
+            <td><%= new Date(order.dateOrdered).toLocaleString() %></td>
+            <td>
+              <% if (order.status === "Cancelled") { %>
+                <p class="status-canceled">Canceled</p>
+              <% } else { %>
+                <select class="status-select" data-id="<%= order._id %>" onchange="updateOrderStatus(this)">
+                  <option value="Pending" <%= order.status === "Pending" ? "selected" : "" %>>Pending</option>
+                  <option value="Shipped" <%= order.status === "Shipped" ? "selected" : "" %>>Shipped</option>
+                  <option value="Delivered" <%= order.status === "Delivered" ? "selected" : "" %>>Delivered</option>
+                </select>
+              <% } %>
+            </td>
+            <td>
+              <a href="/productDetailPage">
+                <button class="btn btn-dark btn-detail" style="background-color: #2d2b2b;" data-id="<%= order._id %>">Detail</button>
+              </a>
+              <!-- <button class="btn btn-danger btn-cancel" data-id="<%= order._id %>">Cancel</button> -->
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  
+
+  <script>
+    function updateOrderStatus(selectElement) {
+      const orderId = selectElement.getAttribute('data-id');
+      const status = selectElement.value;
+  
+      fetch(`/orders/updateStatus/${orderId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // alert("Order status updated!");
+          window.location.reload()
+        } else {
+          alert("Failed to update order status.");
+        }
+      });
+    }
+  </script>

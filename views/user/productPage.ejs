@@ -1,0 +1,248 @@
+<%-include('../layout/user/indexHeader')%>	
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+.product-img {
+    width: 100%;
+    height: auto;
+    overflow: hidden; 
+    position: relative;
+}
+
+.product-img img {
+    width: 100%;
+    transition: transform 0.3s ease; 
+}
+
+.product-img.zoomed img {
+    transform: scale(1.5); 
+}
+
+.product-img img {
+    object-fit: cover;
+}
+/* Custom styling for price section */
+.price-section {
+    margin-top: 20px;
+}
+
+/* Style for the original price */
+.original-price {
+    font-size: 1em; /* Larger font size for the original price */
+    font-weight: bold;
+    color: #1d1d1d; /* Use a contrasting color (like orange) */
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    font-size: 1.2em; /* Adjust currency symbol size */
+    margin-right: 5px; /* Space between currency and price */
+}
+
+.price {
+    font-size: 2em; /* Larger price text */
+}
+
+/* For out of stock messages */
+.out-of-stock {
+    color: red;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+
+
+</style>
+    <!-- Page Add Section Begin -->
+    <section class="page-add">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="page-breadcrumb">
+                        <h2> Luxury Perfume <span>.</span></h2>
+                        <a href="/">Home</a>
+                        <a href="#">Shop</a>
+                        <!-- <a class="active" href="#">Night Dresses</a> -->
+                    </div>
+                </div>
+                <!-- <div class="col-lg-8">
+                    <img src="/userHome/img/add.jpg" alt="">
+                </div> -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Page Section Beign -->
+    <section class="product-page">
+        <div class="container">
+            <div class="product-control">
+                <!-- Optional: Previous and Next buttons for product navigation -->
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="product-slider owl-carousel">
+                        <% pro.image.forEach((img, index) => { %>
+                            <div class="product-img">
+                                <figure>
+                                    <img class="zoomable-image" src="/uploads/<%= img %>" alt="Product Image <%= index + 1 %>">
+                                    <div class="p-status">new</div>
+                                </figure>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+    
+                <div class="col-lg-6">
+                    <div class="product-content">
+                        <h2><%= pro.name %></h2>    
+                        <div class="pc-meta">
+                            <!-- <div class="rating">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div> -->
+    
+                            <!-- Show only the original price -->
+                            <div class="price-section">
+                                <div class="original-price">
+                                    <span class="currency-symbol">₹</span><span class="price"><%= pro.price %></span>
+                                </div>
+                            </div>
+                        </div>
+                        <p><%= pro.description %></p>
+                        <ul class="tags">
+                            <li><span>Category :</span> <%= pro.category.name %></li>
+                        </ul>
+    
+                        <ul class="tags">
+                            <li><span>Stock :</span> <%= pro.stock %></li>
+                        </ul>
+    
+                        <!-- Display "Out of Stock" if stock is zero -->
+                        <% if (pro.stock <= 0) { %>
+                            <div class="out-of-stock" style="color: red; font-weight: bold;">Out of Stock</div>
+                        <% } else { %>
+                            <button onclick="addToCart('<%- pro._id %>')" class="primary-btn pc-btn">Add to cart</button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    
+    
+    
+    
+
+    <!-- Related Product Section Begin -->
+    <section class="related-product spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="section-title">
+                        <h2>Related Products</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+               
+                  
+                <% relatedProducts.forEach(relatedProduct => { %>
+                    <%if(relatedProduct.status==="Active"){ %>
+                    <div class="col-lg-3 col-sm-6">
+                        <div class="single-product-item">
+                            <figure>
+                                <a href="/loadProductPage/<%= relatedProduct._id %>">
+                                    <img src="/uploads/<%= relatedProduct.image[0] %>" alt="<%= relatedProduct.name %>">
+                                </a>
+                                <!-- <% if (relatedProduct.status) { %>
+                                    <div class="p-status"><%= relatedProduct%></div>
+                                <% } %> -->
+                            </figure>
+                            <div class="product-text">
+                                <h6><%= relatedProduct.name %></h6>
+                                <p>&#8377;<%= relatedProduct.price.toFixed(2) %></p>
+                            </div>
+                        </div>
+                    </div>
+                    <%} %>
+                <% }) %>
+             
+            </div>
+        </div>
+    </section>
+    
+    <!-- Related Product Section End -->
+    
+<script>
+		document.addEventListener('DOMContentLoaded', () => {
+         const images = document.querySelectorAll('.zoomable-image');
+
+        images.forEach(image => {
+        image.addEventListener('mouseover', () => {
+            image.closest('.product-img').classList.add('zoomed');
+        });
+
+        image.addEventListener('mouseout', () => {
+            image.closest('.product-img').classList.remove('zoomed');
+        });
+    });
+});
+
+</script>
+
+
+<script>
+    function addToCart(productId) {
+        console.log(productId);
+
+        const requestData = { productId };
+
+        fetch('/addCart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', 
+            },
+            body: JSON.stringify(requestData) 
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+
+            if (data.success) {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Product added to cart successfully!",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: "Failed to add product!! Login / Register Please",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        })
+        .catch(error => {
+            Toastify({
+                text: "Error occurred while adding item to cart.",
+                duration: 3000,
+                backgroundColor: "red",
+                close: true,
+                position: "right",
+            }).showToast();
+        });
+    }
+</script>
+
+<%-include('../layout/user/footer')%>	

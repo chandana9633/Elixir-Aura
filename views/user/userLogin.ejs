@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Login 5</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link href="style.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+	<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+</head>
+
+<body>
+	<style>
+		.error{
+			color: red;
+			font-size: 0.9em;
+		}
+		.infinity-image-container {
+			/* background: url('bg.png') center no-repeat; */
+			/* background-color: #898181; */
+			background-size: cover;
+			height: 100vh;
+		}
+
+		.infinity-form-container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.infinity-form {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			min-height: 100vh;
+		}
+
+		.infinity-form h4 {
+			font-weight: bold;
+		}
+
+		.infinity-form .form-input {
+			position: relative;
+		}
+
+		.infinity-form .form-input input {
+			width: 100%;
+			margin-bottom: 20px;
+			height: 40px;
+			border: none;
+			border-bottom: 2px solid #777;
+			outline: none;
+			background: transparent;
+			padding-left: 40px;
+			font-weight: bold;
+			color: #777;
+		}
+
+		.infinity-form .form-input span {
+			position: absolute;
+			top: 8px;
+			padding-left: 10px;
+			color: #777;
+		}
+
+		.infinity-form .form-input input:focus,
+		.infinity-form .form-input input:valid {
+			border-bottom: 2px solid #121212;
+		}
+
+		.infinity-form .custom-checkbox .custom-control-input:checked~.custom-control-label::before {
+			background-color: #4285f4 !important;
+			border: 0px;
+		}
+
+		.infinity-form button[type="submit"] {
+			margin-top: 10px;
+			border: none;
+			cursor: pointer;
+			border-radius: 20px;
+			background: linear-gradient(45deg, #131314, #151515);
+			/*Button Color*/
+			color: #fff;
+			font-weight: bold;
+			transition: 0.5s;
+		}
+
+		.infinity-form button[type="submit"]:hover {
+			background: linear-gradient(45deg, #5a5b5e, #18191a);
+			/*Button color when hover*/
+		}
+
+		.forget-link,
+		.login-link,
+		.register-link {
+			color: #252525;
+			font-weight: bold;
+		}
+
+		.forget-link:hover,
+		.login-link:hover,
+		.register-link:hover {
+			color: #4c4c4d;
+			text-decoration: none;
+		}
+
+		.infinity-form .btn-social {
+			color: white;
+			border: 0;
+			display: inline-block;
+			margin: 0px;
+			margin-right: 10px;
+			font-weight: bold;
+			padding: 0px 5px;
+			margin-bottom: 10px;
+		}
+
+		.infinity-form .btn-facebook {
+			color: #4866a8;
+		}
+
+		.infinity-form .btn-google {
+			color: #da3f34;
+		}
+
+		.infinity-form .btn-twitter {
+			color: #33ccff;
+		}
+
+		.infinity-form .btn-facebook:hover {
+			color: white;
+			background: hsla(221, 40%, 40%, 1);
+		}
+
+		.infinity-form .btn-google:hover {
+			color: white;
+			background: hsla(4, 59%, 47%, 1);
+		}
+
+		.infinity-form .btn-twitter:hover {
+			color: white;
+			background: hsla(195, 78%, 54%, 1);
+		}
+	</style>
+	<div class="container-fluid">
+		<div class="row">
+			<!-- IMAGE CONTAINER BEGIN -->
+			<div class="col-lg-6 col-md-6 d-none d-md-block infinity-image-container"></div>
+			<!-- IMAGE CONTAINER END -->
+
+			<!-- FORM CONTAINER BEGIN -->
+			<div class="col-lg-6 col-md-6 infinity-form-container">
+				<div class="col-lg-9 col-md-12 col-sm-8 col-xs-12 infinity-form">
+					<!-- Company Logo -->
+					<div class="text-center mb-3 mt-5">
+						<!-- <img src="logo.png" width="150px"> -->
+					</div>
+					<div class="text-center mb-4">
+						<h4>Login into account</h4>
+					</div>
+					<!-- Form -->
+					<form id="sigin" class="px-3" novalidate>
+						<!-- Input Box -->
+						<div class="form-input">
+							<span><i class="fa fa-envelope"></i></span>
+							<input type="email" name="" id="email" value="ane@gmail.com" placeholder="Email Address" tabindex="10" required>
+							<div id="emailError" class="error"></div>
+						</div>
+						<div class="form-input">
+							<span><i class="fa fa-lock"></i></span>
+							<input type="password" name="" id="password" value="123456" placeholder="Password" required>
+							<div id="passwordError" class="error"></div>
+						</div>
+						<div class="row mb-3">
+							<!--Remember Checkbox -->
+							<div class="col-auto d-flex align-items-center">
+								<div class="custom-control custom-checkbox">
+									<input type="checkbox" class="custom-control-input" id="cb1">
+									<!-- <label class="custom-control-label" for="cb1">Remember me</label> -->
+								</div>
+							</div>
+						</div>
+
+						<!-- Login Button -->
+						<div class="mb-3">
+							<button type="submit" class="btn btn-block">Login</button>
+						</div>
+						<div id="error_message" class="error"></div>
+						<!-- Forget Password -->
+						<div class="text-right">
+							<a href="/forgotPassword" class="forget-link">Forgot password?</a>
+						</div>
+
+						<div class="text-center mb-2">
+							<div class="text-center mb-3" style="color: #777;">or login with</div>
+
+							<!-- Facebook Button -->
+							<!-- <a href="" class="btn btn-social btn-facebook">facebook</a> -->
+
+							<!-- Google Button -->
+							<a href="/auth/google" class="btn btn-social btn-google">google</a>
+
+							<!-- Twitter Button -->
+							<!-- <a href="" class="btn btn-social btn-twitter">twitter</a> -->
+						</div>
+
+						<div class="text-center mb-5" style="color: #777;">Don't have an account?
+							<a class="register-link" href="/register">Register here</a>
+						</div>
+					</form>
+				</div>
+				<!-- FORM END -->
+			</div>
+			<!-- FORM CONTAINER END -->
+		</div>
+	</div>
+</body>
+<script>
+	document.getElementById('sigin').addEventListener('submit', async (event) => {
+		event.preventDefault()
+
+		const email=document.getElementById('email').value;
+		const password=document.getElementById('password').value
+
+
+		//enamilValidate
+		let isValied=true
+		const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+	if (email === '') {
+		isValied = false;
+		document.getElementById('emailError').textContent = 'Email is required';
+	} else if (!emailPattern.test(email)) {
+		isValied = false;
+		document.getElementById('emailError').textContent = 'Invalid email format';
+	} else {
+		document.getElementById('emailError').textContent = '';
+	}	
+
+
+	//passwordValidation
+
+if (password==='') {
+	isValied=false
+	document.getElementById('passwordError').textContent='Password is required'
+} else if(password.length <6) {
+	isValied=false
+	document.getElementById('passwordError').textContent='Password should be at least 6 characters'
+}else{
+	document.getElementById('passwordError').textContent=''
+}
+
+
+		try {
+			const response=await fetch('/signIn',{
+				method:'POST',
+				headers:{
+					'Content-Type':'application/json',
+				},
+				body:JSON.stringify({email,password})
+			})
+
+			const data=await response.json()
+
+			if(response.ok){
+				window.location.href="/"
+			}else{
+				document.getElementById('error_message').innerText=data.message
+				console.log(data);
+				
+			}
+		} catch (error) {
+			console.log('Error:',error);			
+		}
+	})
+</script>
+</html>

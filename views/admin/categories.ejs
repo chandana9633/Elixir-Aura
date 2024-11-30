@@ -1,0 +1,435 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
+
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Ariall', sans-serif;
+    background-color: #f5f5f5;
+}
+
+.container {
+    width: 80%;
+    margin: 40px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.header p {
+    color: #777;
+    margin-bottom: 20px;
+}
+
+.main-content {
+    width: 100%;
+}
+
+.form-table-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Form container for adding category */
+.form-container {
+    width: 60%;
+    margin-bottom: 20px;
+}
+
+.form-container label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.form-container input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.create-btn {
+    background-color: #515151;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.create-btn:hover {
+    background-color: #a8a9aa;
+}
+
+/* Table container */
+.table-container {
+    width: 65%;
+}
+
+.search-input {
+    float: right;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.category-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.category-table th, .category-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.category-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.category-table td {
+    font-size: 16px;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+}
+
+.status.active {
+    background-color: #e0f7e9;
+    color: #28a745;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.action-btn:hover {
+    color: #464748;
+}
+
+.dropdown-item.text-danger {
+    color: red;
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: #f8d7da;
+}
+
+.status.active {
+    background-color: #e0f7e9;
+    color: #28a745;
+}
+
+.status.blocked {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+
+    </style>
+<!-- </head>
+<body> -->
+    <%- include('../layout/admin/adminHeader') %> 
+    <div class="container">
+        <div class="header">
+            <h2>Categories</h2>
+            <p>Add, edit or delete a category</p>
+        </div>
+
+        <!-- Add this in the head section -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+        <!-- <div id="status-error-message" style="color: red; display: none; margin-top: 10px;"></div> -->
+
+        <div class="main-content">
+            <!-- Category add form and table inside the same div -->
+             <div>
+            <div class="form-table-section">
+                <!-- Form for adding category -->
+                <form id="categoryForm" method="post">
+                    <div class="form-container">
+                        <label for="category-name">Name</label>
+                        <input type="text" id="category-name" name="cName" placeholder="Type here">
+                        <p id="error-message" style="color: red; display: none;"></p>
+                        <button class="create-btn">Add category</button>
+                    </div>
+                </form>
+                
+
+                <!-- Table for showing categories -->
+                <div class="table-container">
+                    <table class="category-table">
+                        <thead>
+                            <tr>
+                                <th>S_no</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% categoryData.forEach((result, index) => { %>
+                            <tr id="category-row-<%= result._id %>">
+                                <td><%= index + 1 %></td>
+                                <td><%= result.name %></td>
+                                <td>
+                                    <span id="status-<%= result._id %>" class="status <%= result.status === 'Blocked' ? 'blocked' : 'active' %>">
+                                        <%= result.status %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-dark dropdown-toggle" type="button" id="dropdownMenuButton<%= index %>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            ...
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton<%= index %>">
+                                            <a class="dropdown-item" href="/admin/editCategory/<%= result._id %>">Edit</a>                                           
+                                             <a class="dropdown-item" href="#" onclick="updateCategoryStatus('<%= result._id %>', 'Block')">Block</a>
+                                            <a class="dropdown-item" href="#" onclick="updateCategoryStatus('<%= result._id %>', 'Active')">Unblock</a>
+                                            <!-- <a class="dropdown-item text-danger" href="#" onclick="softDeleteCategory('<%= result._id %>')">Delete</a> -->
+                                            <a class="dropdown-item text-danger" href="#" onclick="deleteCategory('<%= result._id %>')">Delete</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                
+            </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <script>
+ // Function to add a category
+document.getElementById('categoryForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const cName = document.getElementById('category-name').value.trim();
+    const errorMessage = document.getElementById('error-message');
+
+    if (!cName) {
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Please enter a category name.';
+        return;
+    }
+
+    if (/\d/.test(cName)) {
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'Category name should not contain numbers.';
+        return;
+    }
+
+    if (/[^a-zA-Z\s]/.test(cName)) {
+        errorMessage.textContent = 'Category name should not contain special characters.';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    errorMessage.style.display = 'none';
+
+    try {
+        const response = await fetch('/admin/addCategory', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cName })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Category added successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = data.message || 'Failed to add category';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'An unexpected error occurred.';
+    }
+});
+
+    async function updateCategoryStatus(categoryId, action) {
+    const statusMessageElement = document.getElementById('status-error-message');
+
+    const confirmText = action === 'Block' ? 'Are you sure you want to block this category?' : 'Are you sure you want to unblock this category?';
+    
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: confirmText,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, proceed!',
+        cancelButtonText: 'No, cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch('/admin/changeCategoryStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ categoryId, action })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const statusElement = document.getElementById(`status-${categoryId}`);
+                statusElement.textContent = data.status;
+                statusElement.classList.remove('active', 'blocked');
+                statusElement.classList.add(data.status === 'Active' ? 'active' : 'blocked');
+                statusMessageElement.style.display = 'none';
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Category has been ${action === 'Block' ? 'blocked' : 'unblocked'} successfully.`,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                statusMessageElement.style.display = 'block';
+                statusMessageElement.textContent = data.message || 'Failed to update category status.';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            statusMessageElement.style.display = 'block';
+            statusMessageElement.textContent = 'An error occurred while updating status.';
+        }
+    }
+}
+
+ // Function to soft delete a category
+// async function softDeleteCategory(categoryId) {
+//     const statusMessageElement = document.getElementById('status-error-message');
+
+//     const result = await Swal.fire({
+//         title: 'Are you sure?',
+//         text: 'This category will be permanently deleted.',
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonText: 'Yes, delete it!',
+//         cancelButtonText: 'No, keep it'
+//     });
+
+//     if (result.isConfirmed) {
+//         try {
+//             const response = await fetch(`/admin/deleteCategory/${categoryId}`, { method: 'GET' });
+//             if (response.ok) {
+//                 document.getElementById(`category-row-${categoryId}`).remove();
+//                 statusMessageElement.style.display = 'none';
+
+//                 // Show success alert
+//                 Swal.fire({
+//                     title: 'Deleted!',
+//                     text: 'Category has been deleted successfully.',
+//                     icon: 'success',
+//                     confirmButtonText: 'OK'
+//                 });
+//             } else {
+//                 statusMessageElement.style.display = 'block';
+//                 statusMessageElement.textContent = 'Failed to delete category.';
+//             }
+//         } catch (error) {
+//             console.error('Error:', error);
+//             statusMessageElement.style.display = 'block';
+//             statusMessageElement.textContent = 'An error occurred while deleting the category.';
+//         }
+//     }
+// }
+
+
+async function deleteCategory(categoryId) {
+        const statusMessageElement = document.getElementById('status-error-message');
+
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to permanently delete this category. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/admin/deleteCategory/${categoryId}`, { method: 'GET' });
+                if (response.ok) {
+                    document.getElementById(`category-row-${categoryId}`).remove();
+                    Swal.fire(
+                        'Deleted!',
+                        'The category has been permanently deleted.',
+                        'success'
+                    );
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        'Failed to delete category.',
+                        'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire(
+                    'Error!',
+                    'An error occurred while deleting the category.',
+                    'error'
+                );
+            }
+        }
+    }
+   </script>
+    
+   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+   
+    
+     
+</body>
+</html>

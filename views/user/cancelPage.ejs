@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Cancellation</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    text-align: center;
+    background: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+/* Message Box */
+.message-box h1 {
+    font-size: 2rem;
+    color: #d9534f;
+    margin-bottom: 1rem;
+}
+
+.message-box p {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+/* Home Link */
+.home-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #0275d8;
+    color: #fff;
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.home-link:hover {
+    background-color: #025aa5;
+}
+
+    </style>
+</head>
+<!-- <body>
+    <div class="container">
+        <div class="message-box">
+            <h1>Order Canceled</h1>
+            <p>Your order has been successfully canceled. If you have any questions or need further assistance, please feel free to contact our support team.</p>
+            <a href="/" class="home-link">Return to Homepage</a>
+        </div>
+    </div>
+</body> -->
+
+<body>
+    <div class="container">
+        <div class="message-box">
+            <% if (successMessage) { %>
+                <h1>Order Canceled</h1>
+                <p><%= successMessage %></p>
+            <% } else if (errorMessage) { %>
+                <h1>Error</h1>
+                <p><%= errorMessage %></p>
+            <% } %>
+            <a href="/" class="home-link">Return to Homepage</a>
+        </div>
+    </div>
+</body>
+</html>

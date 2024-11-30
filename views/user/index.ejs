@@ -1,0 +1,176 @@
+<%-include('../layout/user/indexHeader')%>	
+    <!-- Hero Slider Begin -->
+    <section class="hero-slider">
+        <div class="hero-items owl-carousel">
+            <div class="single-slider-item set-bg" data-setbg="/userHome/img/slider-03.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h1 style="color: black;">30% off</h1>
+                            <h2 >NEW ARRIVAL</h2>
+                            <a href="#" class="primary-btn">See More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="single-slider-item set-bg" data-setbg="/userHome/img/slider-7.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h1 style="color: #fff">FRAGS</h1>
+                            <h2>A Range Of Perfume</h2>
+                            <a href="#" class="primary-btn">See More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="single-slider-item set-bg" data-setbg="img/slider-4.jpg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h3 style="color: rgba(40, 39, 39, 0.97);">We Only Provide</h3>
+                            <h2 style="color: #070707; font-style: italic; font-weight:bold;">Luxury Perfumes</h2>
+                            <a href="#" class="primary-btn">See More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Hero Slider End -->
+
+    <!-- Features Section Begin -->
+    <section class="features-section spad">
+        <div class="features-ads">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="single-features-ads first">
+                            <img src="/userHome/img/icons/f-delivery.png" alt="">
+                            <h4>Free shipping</h4>
+                            <p>Fusce urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal
+                                esuada aliquet libero viverra cursus. </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="single-features-ads second">
+                            <img src="/userHome/img/icons/coin.png" alt="">
+                            <h4>100% Money back </h4>
+                            <p>Urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal esuada
+                                aliquet libero viverra cursus. </p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="single-features-ads">
+                            <img src="/userHome/img/icons/chat.png" alt="">
+                            <h4>Online support 24/7</h4>
+                            <p>Urna quam, euismod sit amet mollis quis, vestibulum quis velit. Vesti bulum mal esuada
+                                aliquet libero viverra cursus. </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="latest-products spad">
+        <div class="container">
+            <div class="product-filter">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <div class="section-title">
+                            <h2>Latest Products</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="product-list">
+
+				<% latestProduct.forEach(latestPro => { %>
+                    <div class="col-lg-3 col-sm-6 mix all dresses bags">
+                        <div class="single-product-item">
+                            <figure>
+                                <a href="/loadProductPage/<%=latestPro._id%>">
+                                    <img src="/uploads/<%= latestPro.image[0] %>" alt="">
+                                </a>
+                                <div class="p-status">
+                                    <% if (latestPro.stock <= 0) { %> 
+                                        Out of Stock
+                                    <% } else { %> 
+                                        new
+                                    <% } %>
+                                </div>
+                            </figure>
+                            <div class="product-text">
+                                <h6><%= latestPro.name %></h6>
+                                <p>&#8377;<%= latestPro.price.toFixed(2) %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+                
+            </div>
+        </div>
+    </section>
+    <section class="latest-products spad">
+        <div class="container">
+            <div class="product-filter">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <div class="section-title">
+                            <h2>You Might Also Like</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="product-list">
+
+				<%allProduct.forEach(allPro=>{%>
+                <div class="col-lg-3 col-sm-6 mix all dresses bags">
+                    <div class="single-product-item">
+                        <figure>
+                            <a href="/loadProductPage/<%=allPro._id%>"><img src="/uploads/<%= allPro.image[0] %>" alt=""></a>
+                            <!-- <div class="p-status">new</div> -->
+                        </figure>
+                        <div class="product-text">
+                            <h6><%= allPro.name %></h6>
+                            <p>&#8377;<%= allPro.price.toFixed(2) %></p>
+                        </div>
+                    </div>
+                </div>
+				<%})%>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Product Begin -->
+   
+    
+    <!-- Latest Product End -->
+
+	
+
+    <!-- Logo Section Begin -->
+    <div class="logo-section spad">
+        <div class="logo-items owl-carousel">
+            <div class="logo-item">
+                <img src="/userHome/img/logos/logo-1.png" alt="">
+            </div>
+            <div class="logo-item">
+                <img src="/userHome/img/logos/logo-2.png" alt="">
+            </div>
+            <div class="logo-item">
+                <img src="/userHome/img/logos/logo-3.png" alt="">
+            </div>
+            <div class="logo-item">
+                <img src="/userHome/img/logos/logo-4.png" alt="">
+            </div>
+            <div class="logo-item">
+                <img src="/userHome/img/logos/logo-5.png" alt="">
+            </div>
+        </div>
+    </div>
+    <!-- Logo Section End -->
+
+	<%-include('../layout/user/footer')%>	
+

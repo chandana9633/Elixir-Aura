@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Admin Login</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="/adminHome/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="/adminHome/css/sb-admin-2.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gradient-primary">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xl-10 col-lg-12 col-md-9">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                    </div>
+
+                                    <!-- Login Form -->
+                                    <form id="adminSignin" class="user" method="POST">
+                                        <div class="form-group">
+                                            <input type="email" id="email" value="admin@gmail.com" class="form-control form-control-user"
+                                                name="email" placeholder="Enter Email Address..." required>
+                                            <div class="invalid-feedback" id="emailError"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" value="1234" id="password" class="form-control form-control-user"
+                                                name="password" placeholder="Password" required>
+                                            <div class="invalid-feedback" id="passwordError"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                <!-- <label class="custom-control-label" for="customCheck">Remember Me</label> -->
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
+                                    </form>
+
+                                    <hr>
+                                    <!-- <div class="text-center">
+                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
+                                    </div> -->
+                                    <!-- <div class="text-center">
+                                        <a class="small" href="register.html">Create an Account!</a>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="/adminHome/vendor/jquery/jquery.min.js"></script>
+    <script src="/adminHome/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="/adminHome/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="/adminHome/js/sb-admin-2.min.js"></script>
+
+    <!-- Custom JavaScript for handling form submission -->
+    <script>
+        document.getElementById('adminSignin').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            document.querySelectorAll('.invalid-feedback').forEach(error => error.textContent = '');
+            document.querySelectorAll('.form-control').forEach(input => input.classList.remove('is-invalid'));
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            let hasError = false;
+
+            if (!email) {
+                document.getElementById('email').classList.add('is-invalid');
+                document.getElementById('emailError').textContent = 'Please enter your email';
+                hasError = true;
+            }
+
+            if (!password) {
+                document.getElementById('password').classList.add('is-invalid');
+                document.getElementById('passwordError').textContent = 'Please enter your password';
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            const response = await fetch('/admin/adminLogin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const fieldErrors = data.fieldErrors || {};
+
+                if (fieldErrors.email) {
+                    document.getElementById('email').classList.add('is-invalid');
+                    document.getElementById('emailError').textContent = fieldErrors.email;
+                }
+                if (fieldErrors.password) {
+                    document.getElementById('password').classList.add('is-invalid');
+                    document.getElementById('passwordError').textContent = fieldErrors.password;
+                }
+            } else {
+                window.location.href = data.redirectUrl;
+            }
+        });
+
+        function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase())
+        }
+        
+    </script>
+</body>
+
+</html>

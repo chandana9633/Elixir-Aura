@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9fafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Container Styles */
+        .otp-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* Title */
+        .otp-title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Description */
+        .otp-description {
+            font-size: 14px;
+            color: #7a7a7a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styles */
+        .otp-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .otp-input-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .otp-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .otp-input:focus {
+            border-color: #465056;
+        }
+
+        .otp-button {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background: #465056;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .otp-button:hover {
+            background: #2e373c;
+        }
+
+        /* Error Message */
+        .error-message {
+            color: red;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .otp-container {
+                padding: 20px;
+            }
+
+            .otp-title {
+                font-size: 22px;
+            }
+
+            .otp-input {
+                width: 45px;
+                height: 45px;
+            }
+
+            .otp-button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="otp-container">
+        <h1 class="otp-title">Verify OTP</h1>
+        <p class="otp-description">Enter the 6-digit OTP sent to your email address</p>
+        <form id="otpForm" class="otp-form">
+            <div class="otp-input-container">
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <button type="submit" class="otp-button">Verify OTP</button>
+        </form>
+    </div>
+
+</body>
+
+</html>

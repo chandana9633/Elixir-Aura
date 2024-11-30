@@ -1,0 +1,366 @@
+
+<%-include('../layout/user/indexHeader')%>	
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #28292a;
+            --secondary-color: #4b4c4c;
+            --text-dark: #2c3e50;
+            --background-light: #f0f4f8;
+            --card-background: #ffffff;
+            --shadow-subtle: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .order-details-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: transparent;
+        }
+
+        /* Header Section */
+        .order-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .order-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .order-header h1 i {
+            color: var(--secondary-color);
+        }
+
+        .order-header p {
+            font-size: 1rem;
+            color: var(--text-dark);
+            opacity: 0.7;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Order Summary */
+        .order-summary, .customer-info, .order-items {
+            margin-bottom: 30px;
+        }
+
+        .order-summary h2, .customer-info h2, .order-items h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .summary-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-item h3 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .summary-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        /* Customer Info */
+        .address-box {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-subtle);
+            line-height: 1.6;
+        }
+
+        /* Order Items */
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-item::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-item img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-details h3 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .product-details p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-details-container {
+                padding: 15px;
+                margin: 20px 10px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .product-item img {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+        .cancel-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cancel-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .cancel-button:active {
+            transform: translateY(0);
+        }
+
+        .cancel-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-details-container">
+        <!-- Header Section -->
+        <header class="order-header">
+            <h1><i class="fas fa-shopping-cart"></i>Order #<%= order._id %></h1>
+            <p>Placed on: <strong><%= new Date(order.createdAt).toLocaleDateString() %></strong></p>
+            <a href="/orders" class="back-link"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+        </header>
+
+        <!-- Order Summary Section -->
+        <!-- <section class="order-summary">
+            <h2>Order Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <h3>Total Items</h3>
+                    <p><%= order.totalQuantity %></p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Cost</h3>
+                    <p>₹<%= order.totalPrice.toFixed(2) %></p>
+                </div>
+                <div class="summary-item">
+                    <h3>Payment Method</h3>
+                    <p><%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod %></p>
+                </div>
+                <div class="summary-item">
+                    <h3>Status</h3>
+                    <p><%= order.status %></p>
+                </div>
+            </div>
+        </section> -->
+        <!-- Customer Details Section -->
+        <section class="customer-info">
+            <h2>Shipping Address</h2>
+            <div class="address-box">
+                <%order.billingAddress.forEach(ord=>{%>
+                <p><strong><%= ord.userName %></strong></p>
+                <p><%= ord.street %></p>
+                <p><%= ord.city %>, <%= ord.state %> <%= ord.pin %></p>
+                <p><%= ord.country %></p>
+                <%})%>
+            </div>
+        </section>
+
+        <section class="customer-info">
+            <h2>Order Summary</h2>
+            <div class="address-box">
+                
+                <p> <strong >Total Items :</strong> <%= order.totalQuantity %></p>
+                <p> <strong >Total Cost :</strong> ₹<%= order.totalPrice.toFixed(2) %></p>
+                <p> <strong >Payment Method :</strong> <%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod %></p>
+                <p> <strong >Status :</strong> <%= order.status %></p>
+               
+            </div>
+        </section>
+
+
+        <!-- Itemized Products Section -->
+        <section class="order-items">
+            <h2>Items in Order</h2>
+            <div class="items-list">
+                <% order.productItems.forEach(item => { %>
+                    <div class="product-item">
+                        <img src="/uploads/<%= item.productId.image[0]%>" alt="<%= item.productName %>">
+                        <div class="product-details">
+                            <h3><%= item.productName %></h3>
+                            <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                            <p><strong>Price:</strong> ₹<%= item.total.toFixed(2) %></p>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </section>
+
+        <section class="cancel-section">
+            <!-- Only show the cancel button if the order is not already canceled or delivered -->
+            <% if (order.status !== 'Canceled' && order.status !== 'Delivered') { %>
+                <form action="/orders/cancel/<%= order._id %>" method="POST">
+                    <a href="/cancelPage">
+                        <button type="submit" class="cancel-button">Cancel Order</button>
+                    </a>
+                </form>
+            <% } else { %>
+                <p style="color: #e74c3c; font-weight: bold;">Order cannot be canceled as it is already <%= order.status %>.</p>
+            <% } %>
+        </section>
+    </div>
+</body>
+</html>
+
+<%-include('../layout/user/footer')%>	
