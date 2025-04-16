@@ -10,8 +10,8 @@
             margin: 0;
             padding: 0;
             font-family: 'Roboto', sans-serif;
-            background-color: #eaf8e4; /* Light green background */
-            color: #2e7d32; /* Dark green text color */
+            background-color: #eaf8e4;
+            color: #2e7d32; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,7 +20,7 @@
         }
         .success-container {
             text-align: center;
-            background-color: #388e3c; /* Green background */
+            background-color: #388e3c; 
             color: white;
             padding: 40px;
             border-radius: 10px;
@@ -44,7 +44,7 @@
             margin-bottom: 30px;
         }
         .button {
-            background-color: #4caf50; /* Green button */
+            background-color: #4caf50; 
             color: white;
             padding: 10px 20px;
             font-size: 16px;
@@ -58,7 +58,6 @@
             background-color: #45a049;
         }
 
-        /* Checkmark animation */
         .checkmark {
             width: 80px;
             height: 80px;
@@ -107,7 +106,6 @@
             }
         }
 
-        /* Fade-in effect */
         @keyframes fadeIn {
             0% {
                 opacity: 0;
@@ -125,7 +123,7 @@
         <h1>Order Placed Successfully!</h1>
         <p>Your order has been placed successfully. Thank you for shopping with us!</p>
         <div class="order-id">Order ID: <span id="order-id"><%=orderId%></span></div>
-        <a href="/" class="button">Back to Home</a>
+        <a href="/orders" class="button">Back to Orders</a>
     </div>
 
 </body>

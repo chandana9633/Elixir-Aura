@@ -1,0 +1,148 @@
+<%-include('../layout/user/indexHeader')%>	
+
+
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f7fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .wallet-container {
+        width: 90%;
+        max-width: 1100px;
+        background: linear-gradient(135deg, #f7f7f7, #e0e7ff);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 50px auto;
+        box-shadow: 0 10px 30px rgba(40, 40, 40, 0.1);
+    }
+
+    h1 {
+        font-size: 30px;
+        color: #34495e;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .amount-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .amount-box {
+        flex: 1;
+        max-width: 300px;
+        text-align: center;
+        background-color: #ffffff;
+        border-radius: 15px;
+        padding: 20px 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .amount-box:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .amount-label {
+        font-size: 16px;
+        color: #7f8c8d;
+        margin-bottom: 10px;
+    }
+
+    .amount-value {
+        font-size: 26px;
+        font-weight: bold;
+    }
+
+    #balance .amount-value { color: #27ae60; }
+    #returnAmount .amount-value { color: #e74c3c; }
+    #canceledAmount .amount-value { color: #f1c40f; }
+
+    .transaction-table {
+        width: 100%;
+        background: #ffffff;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .transaction-table th, .transaction-table td {
+        padding: 18px;
+        text-align: left;
+    }
+
+    .transaction-table th {
+        background-color: #3e3e3e;
+        color: #ffffff;
+        font-size: 16px;
+    }
+
+    .transaction-table td {
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+
+    .transaction-table tr:hover {
+        background-color: #f4f6f9;
+    }
+
+    .transaction-description {
+        color: #2c3e50;
+    }
+
+    .transaction-amount.positive {
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .transaction-amount.negative {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+</style>
+<body>
+    <div class="wallet-container">
+        <h1>Wallet Overview</h1>
+        <div class="amount-container">
+            <div id="balance" class="amount-box">
+                <div class="amount-label">Available Balance</div>
+                <div class="amount-value">₹<%= total.toFixed(2) %></div>
+            </div>
+        </div>
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="transactionList">
+                <% walletEntries.forEach(entry => { %>
+                    <tr>
+                        <td><%= new Date(entry.date).toLocaleDateString() %></td>
+                        <td class="transaction-description"><%= entry.description %></td>
+                        <td class="transaction-amount <%= entry.type === 'Credit' ? 'positive' : 'negative' %>">
+                            ₹<%= entry.amount.toFixed(2) %>
+                        </td>
+                    </tr>
+                <% }); %>
+
+                <% if (walletEntries.length === 0) { %>
+                    <tr>
+                        <td colspan="3" style="text-align: center;">No transactions found.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</body>
+                                                        
+

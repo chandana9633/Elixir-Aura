@@ -7,6 +7,11 @@ const middleware=require('../../middlewares/adminMiddleware')
 const categoryController=require('../../controllers/adminController/categoryController')
 const productController=require('../../controllers/adminController/productsController')
 const ordersController=require('../../controllers/adminController/ordersController')
+const returnOrderController=require('../../controllers/adminController/returnOrderController')
+const couponController=require('../../controllers/adminController/couponController')
+const salesReportController=require('../../controllers/adminController/salesReportController')
+const categoryOfferController=require('../../controllers/adminController/categorryOfferController')
+const dashboardController=require('../../controllers/adminController/dashboardController')
 const upload = require("../../../config/multer");
 
 // const upload = multer({ dest: 'uploads/' });
@@ -35,8 +40,31 @@ router.post('/addProduct',upload.array('image',3), productController.uploadProdu
 router.put('/changeStatus/:userId',adminAuthentication.changeStatus)
 
 router.get('/orders',ordersController.allOrders)
-// router.put('/admin/orders/:orderId/status', updateOrderStatus);
-router.get('/productDetilPage',ordersController.productDetailAdmin)
+router.get('/productDetailPage/:id',ordersController.productDetailAdminShow)
+
+router.get('/orderReturnAdmin/:id',returnOrderController.returnRequestAdmin)
+router.post('/returnRequestProcessing',returnOrderController.returnRequestProcessing)
+
+router.get('/coupons', couponController.couponListPage);
+router.get('/addCoupon', couponController.renderAddCouponPage);
+router.post('/addCoupons', couponController.addCoupon);
+router.get('/editCoupon/:id', couponController.editCouponPage);
+router.post('/editCoupons/:id', couponController.editCoupon);
+router.delete('/deleteCoupon/:id', couponController.deleteCoupon);
+
+
+router.get('/offerCategory', categoryOfferController.CategoryOfferListPage );
+router.get('/addCategoryOffer', categoryOfferController.addCategoryOfferPage );
+router.post('/addOffers', categoryOfferController.addCategoryOffer );
+router.get('/editCategoryOffer/:offerId', categoryOfferController.editCategoryOfferPage );
+router.put('/updateCategoryOffer/:offerId', categoryOfferController.updateCategoryOffer );
+router.delete('/deleteCategoryOffer/:offerId', categoryOfferController.removeCategoryOffer );
+
+
+router.post('/dashboardChart',salesReportController.salesReport)
+router.get('/dashboard-data',dashboardController.getDashboardData)
+
+router.post('/generateReport', adminAuthentication.generateReport);
 
 
 

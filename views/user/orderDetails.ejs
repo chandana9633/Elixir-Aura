@@ -37,7 +37,6 @@
             background-color: transparent;
         }
 
-        /* Header Section */
         .order-header {
             text-align: center;
             margin-bottom: 30px;
@@ -78,7 +77,6 @@
             color: var(--secondary-color);
         }
 
-        /* Order Summary */
         .order-summary, .customer-info, .order-items {
             margin-bottom: 30px;
         }
@@ -140,8 +138,6 @@
             color: var(--text-dark);
             opacity: 0.8;
         }
-
-        /* Customer Info */
         .address-box {
             background: var(--card-background);
             padding: 20px;
@@ -150,7 +146,6 @@
             line-height: 1.6;
         }
 
-        /* Order Items */
         .items-list {
             display: flex;
             flex-direction: column;
@@ -271,40 +266,99 @@
             text-align: center;
             margin-top: 30px;
         }
+        .cancelPro-button{
+            background-color: #d64130;
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            padding: 5px 25px;
+
+
+        }
+
+        .return-button {
+    background-color: #1a1a1bd7;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.return-button:hover {
+    background-color: #3f3f3f;
+}
+
+.download-btn {
+    display: inline-block;
+    background-color: #18415c;
+    color: #fff; 
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 7px;
+    border: none;
+    border-radius: 5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+}
+
+.download-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-3px); 
+}
+
+.download-btn:active {
+    background-color: #1f618d; 
+    transform: translateY(0);
+}
+
+.download-btn:focus {
+    outline: 2px solid #2980b9; 
+    outline-offset: 2px;
+}
+
+.returnPro-button {
+    background-color: #166499; 
+    color: white; 
+    border: none; 
+    border-radius: 5px; 
+    padding: 10px 20px; 
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+}
+
+.returnPro-button:hover {
+    background-color: #2980b9; 
+    transform: scale(1.05); 
+}
+
+.returnPro-button:active {
+    background-color: #1c6a9e;
+    transform: scale(0.98); 
+}
+
+.returnPro-button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed; 
+    box-shadow: none;
+}
+
+
+
+
     </style>
 </head>
 <body>
     <div class="order-details-container">
-        <!-- Header Section -->
         <header class="order-header">
             <h1><i class="fas fa-shopping-cart"></i>Order #<%= order._id %></h1>
             <p>Placed on: <strong><%= new Date(order.createdAt).toLocaleDateString() %></strong></p>
             <a href="/orders" class="back-link"><i class="fas fa-arrow-left"></i> Back to Orders</a>
         </header>
-
-        <!-- Order Summary Section -->
-        <!-- <section class="order-summary">
-            <h2>Order Summary</h2>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <h3>Total Items</h3>
-                    <p><%= order.totalQuantity %></p>
-                </div>
-                <div class="summary-item">
-                    <h3>Total Cost</h3>
-                    <p>₹<%= order.totalPrice.toFixed(2) %></p>
-                </div>
-                <div class="summary-item">
-                    <h3>Payment Method</h3>
-                    <p><%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod %></p>
-                </div>
-                <div class="summary-item">
-                    <h3>Status</h3>
-                    <p><%= order.status %></p>
-                </div>
-            </div>
-        </section> -->
-        <!-- Customer Details Section -->
         <section class="customer-info">
             <h2>Shipping Address</h2>
             <div class="address-box">
@@ -320,46 +374,173 @@
         <section class="customer-info">
             <h2>Order Summary</h2>
             <div class="address-box">
-                
-                <p> <strong >Total Items :</strong> <%= order.totalQuantity %></p>
-                <p> <strong >Total Cost :</strong> ₹<%= order.totalPrice.toFixed(2) %></p>
-                <p> <strong >Payment Method :</strong> <%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod %></p>
-                <p> <strong >Status :</strong> <%= order.status %></p>
-               
+                <p><strong>Total Items:</strong> <%= order.totalQuantity %></p>
+                <p><strong>Total Cost:</strong> ₹<%= order.totalPrice %></p>
+                <p><strong>Payment Method:</strong> <%= order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod %></p>
+                <p><strong>Status:</strong> <%= order.status %></p>
+                <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+        
+                <% if (order.status === 'Delivered') { %>
+                    <button id="download-btn-invoice" class="download-btn" data-order-id="<%= order._id %>">
+                        Download Invoice
+                    </button>
+                <% } %>
             </div>
         </section>
+        
 
-
-        <!-- Itemized Products Section -->
         <section class="order-items">
             <h2>Items in Order</h2>
             <div class="items-list">
                 <% order.productItems.forEach(item => { %>
                     <div class="product-item">
-                        <img src="/uploads/<%= item.productId.image[0]%>" alt="<%= item.productName %>">
+                        <img src="/uploads/<%= item.productId.image[0] %>" alt="<%= item.productName %>">
                         <div class="product-details">
                             <h3><%= item.productName %></h3>
                             <p><strong>Quantity:</strong> <%= item.quantity %></p>
                             <p><strong>Price:</strong> ₹<%= item.total.toFixed(2) %></p>
+                            
+                            <% if (order.status === 'Pending' && order.productItems.length > 1) { %>
+                                <form action="/orders/cancel-item/<%= order._id %>/<%= item.productId._id %>" method="POST">
+                                    <input type="hidden" name="newStatus" value="Cancelled">
+                                    <button class="cancelPro-button" data-perticularOrder-id="<%= order._id %>" data-perticulrPro-id="<%= item.productId._id %>">Cancel</button>
+                                </form>
+                            <% } %>
+        
+                            <% if (order.status === 'Delivered' && !item.returned && order.productItems.length>1) { %>
+                                <a href="/productReturn/<%= order._id %>/<%= item.productId._id %>">
+                                    <button type="button" class="return-button">Return Product</button>
+                                </a>
+                            <% } else if (item.returned) { %>
+                                <p style="color: #06678d; font-weight: bold;">This product has already been returned.</p>
+                            <% } %>
+                            
                         </div>
                     </div>
                 <% }) %>
             </div>
         </section>
-
+        
+        
         <section class="cancel-section">
-            <!-- Only show the cancel button if the order is not already canceled or delivered -->
-            <% if (order.status !== 'Canceled' && order.status !== 'Delivered') { %>
+            <!-- Cancel Entire Order -->
+            <% if (order.status === 'Pending' ) { %>
                 <form action="/orders/cancel/<%= order._id %>" method="POST">
-                    <a href="/cancelPage">
-                        <button type="submit" class="cancel-button">Cancel Order</button>
-                    </a>
+                    <button type="submit" class="cancel-button">Cancel Order</button>
                 </form>
-            <% } else { %>
-                <p style="color: #e74c3c; font-weight: bold;">Order cannot be canceled as it is already <%= order.status %>.</p>
+                
+            <% } else if (order.status !== 'Returned') { %>
+                <p style="color: #239212; font-weight: bold; font-size: 20px;">
+                    Your order has been successfully <%= order.status %>.
+                </p>
+            <% } %>
+        
+            <!-- Return Entire Order -->
+            <% if (order.status === 'Delivered') { %>
+                <a href="/orderReturn/<%= order._id %>">
+                    <button type="button" class="return-button">Return Order</button>
+                </a>
+            <% } else if (order.status === 'Returned') { %>
+                <p style="color: #06678d; font-weight: bold;">Order has already been returned.</p>
             <% } %>
         </section>
+        
+        
+        
+        
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.querySelectorAll('.cancel-button').forEach(button => {
+            button.addEventListener('click', async function (e) {
+                e.preventDefault();
+        
+                const orderId = this.getAttribute('data-order-id');
+        
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Do you really want to cancel the entire order?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, cancel it!'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const response = await fetch(`/orders/cancel/${orderId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({}) // or required payload
+                            });
+        
+                            const result = await response.json();
+        
+                            if (response.ok && result.success) {
+                                Swal.fire(
+                                    'Cancelled!',
+                                    'Your order has been cancelled.',
+                                    'success'
+                                ).then(() => {
+                                    window.location.href = '/cancelPage?success=Order%20canceled%20successfully';
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    result.message || 'Could not cancel the order.',
+                                    'error'
+                                );
+                            }
+                        } catch (error) {
+                            console.error('Cancel Error:', error);
+                            Swal.fire('Oops!', 'Something went wrong.', 'error');
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+        
+
+    <script>
+                  document.getElementById('download-btn-invoice').addEventListener('click', function () {
+                    const orderId = this.getAttribute('data-order-id')
+                    const productId = this.getAttribute('data-product-id')
+
+                    fetch(`/downloadInvoice/${orderId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/pdf'
+                        }
+                    })
+
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `OrderInvoice.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => {
+                            console.error('There was a problem with the fetch operation:', error);
+                        });
+                });   
+    </script>
+
+    
 </body>
 </html>
 

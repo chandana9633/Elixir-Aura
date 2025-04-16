@@ -19,7 +19,7 @@
   }
   
   .orders-table th {
-    background-color: #f2f2f2;
+    background-color: #e3e3db;
     font-weight: 600;
   }
   
@@ -54,7 +54,6 @@
     background-color: #c0392b;
   }
   
-  /* Style for the status dropdown */
   .status-select {
     padding: 8px 12px;
     font-size: 14px;
@@ -76,7 +75,6 @@
     font-size: 14px;
   }
   
-  /* Add specific colors for each status */
   .status-select option[value="Pending"] {
     color: #f39c12;
     font-weight: bold;
@@ -101,18 +99,25 @@
   color: #e74c3c;
   font-weight: bold;
 }
+  .status-deliverd {
+  color: #1d9c16;
+  font-weight: bold;
+}
   </style>
   
   <div class="orders-container">
+
+    <h2 style="color: #4f5050; font-weight: bold;">Order List </h2>
+
     <table class="orders-table">
       <thead>
         <tr>
           <th>#ID</th>
           <th>Name</th>
           <th>Total</th>
-          <th>Return Info</th>
           <th>Date</th>
           <th>Status</th>
+          <th>Method</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -121,12 +126,19 @@
           <tr>
             <td><%= order._id %></td>
             <td><%= order.userName %></td>
-            <td><%= order.totalPrice %></td>
-            <td><%= order.returnReason %></td>
-            <td><%= new Date(order.dateOrdered).toLocaleString() %></td>
+            <td style="color: #3c3d3d; ">₹<%= order.totalPrice %></td>
+            <td><%= new Date(order.createdAt).toLocaleString() %></td>
             <td>
               <% if (order.status === "Cancelled") { %>
                 <p class="status-canceled">Canceled</p>
+              <% } else if (order.status === "Delivered") { %>
+                <p class="status-deliverd">Delivered</p>
+              <% } else if (order.status === "Request for returned") { %>
+                <a href="/admin/orderReturnAdmin/<%=order._id%>">
+                  <p class="status-deliverd">Return request</p>
+                </a>
+              <% } else if (order.status === "Returned") { %>
+                <p class="status-returned"><strong style="color: #d34232;">Order Returned</strong></p>
               <% } else { %>
                 <select class="status-select" data-id="<%= order._id %>" onchange="updateOrderStatus(this)">
                   <option value="Pending" <%= order.status === "Pending" ? "selected" : "" %>>Pending</option>
@@ -135,17 +147,21 @@
                 </select>
               <% } %>
             </td>
+            
+            <!-- <td><input type="text" value=""></td> -->
+            <td style="color: #333941; font-weight: 800;"><%=order.paymentMethod %></td>
+
             <td>
-              <a href="/productDetailPage">
+              <a href="/admin/productDetailPage/<%= order._id %>">
                 <button class="btn btn-dark btn-detail" style="background-color: #2d2b2b;" data-id="<%= order._id %>">Detail</button>
               </a>
-              <!-- <button class="btn btn-danger btn-cancel" data-id="<%= order._id %>">Cancel</button> -->
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
   </div>
+  
   
 
   <script>
@@ -163,7 +179,6 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // alert("Order status updated!");
           window.location.reload()
         } else {
           alert("Failed to update order status.");

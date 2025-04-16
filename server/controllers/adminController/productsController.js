@@ -1,19 +1,8 @@
 const Category=require('../../models/admin/categoryModel')
 const Product = require('../../models/admin/productModel')
+const categoryOffer=require('../../models/admin/categoryOfferModel')
 const fs = require('fs');
 const path = require('path');
-
-// const product=require('../../models/admin/productModel')
-
-// const loadProduct=async (req,res) => {
-//     try {
-//         const product=await Product.find().populate('category')        
-//         res.render('admin/products',{product})
-//     } catch (error) {
-//         console.log('Error from loadproduct',error)
-//     }
-// }
-
 
 const loadProduct = async (req, res) => {
     try {
@@ -39,17 +28,6 @@ const loadProduct = async (req, res) => {
 };
 
 
-// const newArrivals = []
-// const allProducts = []
-// for (let i = product.length - 1; i >= 0; i--) {
-//     if (newArrivals.length < 4) {
-//         newArrivals.push(product[i])
-//     } else {
-//         allProduct.unshift(product[i])
-//     }
-
-// }
-
 const addProducts=async (req,res) => {
     try {
         const categories = await Category.find({status:'Active'})     
@@ -62,9 +40,7 @@ const addProducts=async (req,res) => {
 
 const uploadProducts = async (req,res)=>{
     try {
-        console.log("------",req.body);
-        console.log("---------",req.files);
-          
+                 
         if (!req.files || req.files.length===0) {
             return res.status(400).json({message:'No files uploaded'})
         }
@@ -74,9 +50,11 @@ const uploadProducts = async (req,res)=>{
 
         const {name,description,categoryId,price,stock,specification,discountprice}=req.body
            console.log('catt  body',categoryId);
+
+        const categoryDiscountOffer = await categoryOffer.findOne({categoryId:categoryId});
            
         const newProduct=new Product({
-            name,description,category:categoryId,price,stock,specification,discountprice,image:images
+            name,description,category:categoryId,price,stock,specification,discountprice,image:images,categoryOfferamount:categoryDiscountOffer
 
         })
         await newProduct.save()
@@ -95,14 +73,11 @@ const uploadProducts = async (req,res)=>{
 
 const loadEditProduct=async (req,res) => {
     try {
-        // console.log('h==============================');
         const productId=req.params.id
-        // console.log(productId,'=================');
-        
-     
+        // console.log(productId,);
         
      const product=await Product.findById(productId).populate('category')
-    //  console.log(product,'-----------------------------');
+    //  console.log(product,'-----');
      
         
     product.category
@@ -111,7 +86,6 @@ const loadEditProduct=async (req,res) => {
         const categories=await Category.find()
     // console.log("categot",categories);
 
-        // res.render('admin/editProduct',{product,categories})
         res.render('admin/editProduct',{product,categories})
     } catch (error) {
         console.log('error from loadedit product',error);
@@ -119,58 +93,24 @@ const loadEditProduct=async (req,res) => {
     }
 }
 
-
-
-//=====================================================
-// const editProduct = async (req, res) => {
-//     try {
-//         console.log('edit product')
-//         const productId = req.params.id;
-//         // console.log('id',productId);
-
-//         console.log('============',req.files);
-
-//         const images=req.files.map(file=>file.filename)
-//         console.log(image,'++++++++++++++++++++');
-        
-        
-        
-//         const {
-//             name, description, category, price, stock, specification, discountprice
-//         } = req.body;
-
-//         console.log(name,description,category, price, stock, specification, discountprice,'============');
-        
-
-//         const updatedProduct = await Product.findByIdAndUpdate(
-//             productId,
-//             { $set: { name, description, category, price, stock, specification, discountprice,image:images } },
-//             { new: true }
-//         );
-
-//         res.json({ message: 'Product updated successfully', updatedProduct });
-//     } catch (error) {
-//         console.error('Error updating product:', error);
-//         res.status(500).json({ message: 'Error updating product', error });
-//     }
-// };
-
-
 const editProduct = async (req, res) => {
     try {
-        console.log('Edit Product');
+       
         const productId = req.params.id;
 
         const existingProduct = await Product.findById(productId);
         if (!existingProduct) return res.status(404).json({ message: 'Product not found' });
 
-        const newImages = req.files.map(file => file.filename);
-        
+        const newImages = req.files ? req.files.map(file => file.filename) : [];
+
         const { keepImages } = req.body;
         let updatedImages = keepImages ? JSON.parse(keepImages) : existingProduct.image;
-
+      
         updatedImages = [...updatedImages, ...newImages];
-
+        if (updatedImages.length<3) {
+          return res.status(404).json({message:"You must upload at least 3 images."})
+        }
+        
         const {
             name, description, category, price, stock, specification, discountprice
         } = req.body;
@@ -200,16 +140,12 @@ const editProduct = async (req, res) => {
 };
 
 
-
-
 const removeImages = async (req, res) => {
     try {
         const { imageName } = req.body;
         const { id } = req.params;
         
-        console.log('Received request to delete image:', imageName);
-        console.log('Product ID:', id);
-
+        
         if (!imageName) {
             return res.status(400).json({ 
                 success: false, 
@@ -244,117 +180,9 @@ const removeImages = async (req, res) => {
     }
 };
 
-//=====================================================
-
-
-// const editProduct = async (req, res) => {
-//     try {
-//         const productId = req.params.id;
-//         const { name, description, category, price, stock, specification, discountprice } = req.body;
-//         console.log("name,stock",name,description, category, price, stock, specification, discountprice);
-        
-
-//         // Fetch the product by ID
-//         // if (!product) {
-//         //     return res.status(404).json({ message: 'Product not found' });
-//         // }
-        
-//         // Update product fields
-//         // product.name = name;
-//         // product.description = description;
-//         // product.category = category;
-//         // product.price = price;
-//         // product.stock = stock;
-//         // product.specification = specification;
-//         // product.discountprice = discountprice;
-//         // console.log("================================");
-//         // console.log(req.body);
-//         // console.log(req.params);
-//         // console.log(req.url);
-//         // console.log("================================");
-        
-//         const products=await Product.find().populate('category')  
-//         const product = await Product.findByIdAndUpdate (productId,{
-//             $set:{
-//                 ...req.body
-//             }
-//         },{new:true});
-//         // Save the updated product to the database
-        
-
-//         // Respond with success
-//         return   res.render('admin/products',{product:products})
-//     } catch (error) {
-//         console.error('Error editProduct:', error);
-//         return res.status(500).json({ message: 'Error updating product', error });
-//     }
-// };
-
-
-// const editProduct = async (req, res) => {
-//     try {
-//         const productId = req.params.id;
-//         console.log('=====================================');
-        
-
-//         const {name,description,category,price,stock,specification,discountprice,removedImages} = req.body;
-
-//         // const newImages = req.files.newImages; 
-//         // const updatedImages = []; 
-
-//         // if (newImages && Array.isArray(newImages)) {
-//         //     for (const image of newImages) {
-
-//         //         const imagePath = await saveImage(image);
-//         //         updatedImages.push(imagePath);
-//         //     }
-//         // }
-
-//         const product = await Product.findById(productId);
-//         if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//         }
-
-//         // Update product fields
-//         product.name = name;
-//         product.description = description;
-//         product.category = category;
-//         product.price = price;
-//         product.stock = stock;
-//         product.specification = specification;
-//         product.discountprice = discountprice;
-
-//         // if (removedImages) {
-//         //     // Remove images from the product's image array based on the removedImages array
-//         //     product.image = product.image.filter(img => !removedImages.includes(img.id));
-//         // }
-//         // // Add new images to the product
-//         // product.image.push(...updatedImages);
-
-//         // Save the updated product to the database
-//         await product.save();
-
-//         // Redirect or respond with success
-//         return res.status(200).json({ message: 'Product updated successfully' });
-//     } catch (error) {
-//         console.error('Error updating product:', error);
-//         return res.status(500).json({ message: 'Error updating product', error });
-//     }
-// };
-
-// Implement this function to handle the image saving logic
-async function saveImage(image) {
-    // Use your preferred method to save images (e.g., to a file system, cloud storage)
-    // Return the path or URL of the saved image
-}
-
-
-
-
 
 const changeProductStatus = async (req, res) => {
     const { productId, action } = req.body;
-    console.log(productId,action)
     try {
         const product = await Product.findById(productId);
         
@@ -377,7 +205,7 @@ const changeProductStatus = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     const productId=req.params.id
-    console.log('Product ID to delete', productId);
+
 
     try {
         const deleteProduct=await Product.findByIdAndDelete(productId)
@@ -386,7 +214,7 @@ const deleteProduct = async (req, res) => {
             return res.status(404).send('Product not found')
         }
 
-        console.log('Deleted product:',deleteProduct);
+     
         res.redirect('/admin/products')
         
     } catch (error) {

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin-top: 60px;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-id {
+  background-color: #f0f0f0;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.customer-info, .product-details, .total-amount, .update-status {
+  margin-bottom: 2rem;
+}
+
+h2 {
+  margin-bottom: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+img {
+  max-width: 50px;
+  height: auto;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="order-id">
+      <p>Order ID: <%= order.id %></p>
+      <p>Order placed on: <%= new Date(order.dateOrdered).toLocaleString() %></p>
+    </div>
+    <div class="customer-info">
+      <h2>Customer Information</h2>
+      <% if (order.billingAddress && order.billingAddress.length > 0) { %>
+        <% order.billingAddress.forEach(address => { %>
+          <p>Street: <%= address.street %></p>
+          <p>City: <%= address.city %></p>
+          <p>State: <%= address.state %></p>
+          <p>Pincode: <%= address.pincode %></p>
+          <p>Country: <%= address.country %></p>
+        <% }) %>
+      <% } else { %>
+        <p>No billing address found.</p>
+      <% } %>
+    </div>
+    
+    <div class="product-details">
+      <h2>Product Details</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price (Each)</th>
+            <th>Status</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.productItems.forEach(item => { %>
+            <tr>
+              <td>
+                <img 
+                  src="/uploads/<%= item.productId.image[0] %>" 
+                  alt="<%= item.productId.name %>" />
+              </td>
+              <td><%= item.productId.name %></td>
+              <td><%= item.quantity %></td>
+              <td>₹<%= item.offerPrice %></td>
+              <td><%= item.status%></td>
+              <td>₹<%= item.quantity * item.offerPrice %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      
+    </div>
+    <div class="total-amount">
+      <p>Total Amount: ₹<%= order.totalPrice %></p>
+      <br>
+      <p><strong>Order Status :</strong> <%= order.status %></p>
+      
+    </div>
+  </div>
+</body>
+</html>

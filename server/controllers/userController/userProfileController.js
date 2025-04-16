@@ -1,12 +1,11 @@
 const User = require('../../models/user/userModel');
 
-const userProfile = async (req, res) => {
+const   userProfile = async (req, res) => {
     try {
-       const userId=req.session.user.id
-    //    console.log(userId,'thisssssssssssssssssssssssssss');
+       const userId=req.session.user?.id
        
        const user=await User.findById(userId)
-        // console.log(user,'userrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
+        console.log(user,'-----------------------------');
         
         res.render('user/userProfile',{user});
     } catch (error) {
@@ -18,7 +17,6 @@ const userProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const userId = req.session.user?.id;
-        console.log('Updating profile for User ID:', userId);
 
         if (!userId) {
             return res.status(401).send('Unauthorized. User not logged in.');
@@ -35,7 +33,6 @@ const updateProfile = async (req, res) => {
             { name },
             { new: true, runValidators: true }
         );
-        console.log('Updated user:', updatedUser);
 
         res.redirect('/profile');
     } catch (error) {

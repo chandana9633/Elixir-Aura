@@ -180,7 +180,6 @@
         <form id="editProForm"  enctype="multipart/form-data">
             <div class="form-group">
                 <label for="name">Product Name</label>
-                <!-- <input type="text" id="name" name="name" value="<%=product.name%>"> -->
                 <input type="text" id="name" name="name" value="<%= product.name %>">
                 <div class="error-message text-danger" id="name-error"></div>
             </div>
@@ -212,7 +211,6 @@
 
             <div class="form-group">
                 <label for="stock">Stock</label>
-                <!-- <input type="number" id="stock" name="stock" value="<%=product.stock%>"> -->
                 <input type="hidden" id="imgId" value="<%=  product._id  %>">
                 <input type="number" id="stock" name="stock" value="<%= product.stock %>">
                 <div class="error-message text-danger" id="stock-error"></div>
@@ -222,6 +220,13 @@
                 <label for="specification">Specification</label>
                 <input type="text" id="specification" name="specification" value="<%=product.specification%>">
                 <div class="error-message text-danger" id="specification-error"></div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="discountprice">Discount Price</label>
+                <input type="number" id="discountprice" name="discountprice" value="<%=product.discountprice%>">
+                <div class="error-message text-danger" id="discount-error"></div>
             </div>
 
             <div class="image-upload-section">
@@ -248,17 +253,6 @@
         </form>
     </div>
 
-
-    <!-- <div id="cropModal">
-        <div class="crop-container">
-            <img id="cropImage" src="" alt="Crop Image">
-            <div class="crop-buttons">
-                <button id="saveCroppedImage" class="btn btn-primary">Save</button>
-                <button id="cancelCrop" class="btn btn-secondary">Cancel</button>
-            </div>
-        </div>
-    </div> -->
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const imageInput = document.getElementById('images');
@@ -270,16 +264,6 @@
             let cropper;
             let currentImagePreview;
     
-            const credentials = ["name", "price", "productCategory", "stock", "specification"];
-            const data = {};
-    
-            for (const el of credentials) {
-                data[`${document.getElementById(el).name}`] = document.getElementById(el).value;
-            }
-    
-            console.log("=======================================");
-            console.log(data);
-    
             document.getElementById('editProForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
     
@@ -289,6 +273,7 @@
                 const price = document.getElementById('price').value;
                 const stock = document.getElementById('stock').value;
                 const specification = document.getElementById('specification').value;
+                const discountprice = document.getElementById('discountprice').value;
     
                 const formData = new FormData();
                 formData.append('name', name);
@@ -297,6 +282,7 @@
                 formData.append('price', price);
                 formData.append('stock', stock);
                 formData.append('specification', specification);
+                formData.append('discountprice', discountprice);
     
                 const imageFiles = imageInput.files;
                 for (let i = 0; i < imageFiles.length; i++) {
@@ -306,7 +292,7 @@
                 try {
                     const response = await fetch(`/admin/editProduct/<%=product._id%>`, {
                         method: 'POST',
-                        body: formData 
+                        body: formData
                     });
     
                     const result = await response.json();
@@ -323,7 +309,7 @@
                     } else {
                         Swal.fire({
                             title: 'Oops...',
-                            text: 'Error updating product. Please try again.',
+                            text: result.message||'Error updating product. Please try again.',
                             icon: 'error',
                             confirmButtonText: 'Retry'
                         });
@@ -340,6 +326,7 @@
                 }
             });
     
+            // Image upload and preview
             imageInput.addEventListener('change', function () {
                 const files = Array.from(this.files);
                 if (files.length + document.querySelectorAll('.existing-images .image-container').length > 3) {
@@ -360,13 +347,15 @@
                 reader.onload = function (e) {
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-preview-container mb-3';
-                    imageContainer.innerHTML = ` 
+                    imageContainer.innerHTML = `
                         <img src="${e.target.result}" class="preview-image">
                         <button type="button" class="btn btn-danger remove-btn">Remove</button>
+                        <button type="button" class="btn btn-primary crop-btn">Crop</button>
                     `;
                     imagePreviewContainer.appendChild(imageContainer);
     
                     imageContainer.querySelector('.crop-btn').addEventListener('click', () => openCropModal(imageContainer.querySelector('img')));
+                    
                     imageContainer.querySelector('.remove-btn').addEventListener('click', () => removeImage(imageContainer));
                 };
                 reader.readAsDataURL(file);
@@ -378,6 +367,7 @@
                 currentImagePreview = image;
     
                 if (cropper) cropper.destroy();
+                
                 cropper = new Cropper(cropImage, {
                     aspectRatio: 1,
                     viewMode: 2,
@@ -416,219 +406,34 @@
                         image: croppedImageData
                     })
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Image uploaded successfully', data);
-                        Swal.fire({
-                            title: 'Good job!',
-                            text: 'Image uploaded successfully!',
-                            icon: 'success',
-                            confirmButtonText: 'Awesome'
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error uploading image:', error);
-                        Swal.fire({
-                            title: 'Oops...',
-                            text: 'Error uploading image. Please try again.',
-                            icon: 'error',
-                            confirmButtonText: 'Retry'
-                        });
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Image uploaded successfully', data);
+                    Swal.fire({
+                        title: 'Good job!',
+                        text: 'Image uploaded successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'Awesome'
                     });
+                })
+                .catch(error => {
+                    console.error('Error uploading image:', error);
+                    Swal.fire({
+                        title: 'Oops...',
+                        text: 'Error uploading image. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'Retry'
+                    });
+                });
             }
         });
     </script>
     
-    <!-- <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const imageInput = document.getElementById('images');
-            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-            const cropModal = document.getElementById('cropModal');
-            const cropImage = document.getElementById('cropImage');
-            const saveCroppedImageBtn = document.getElementById('saveCroppedImage');
-            const cancelCropBtn = document.getElementById('cancelCrop');
-            let cropper;
-            let currentImagePreview;
-    
-            const credentials = ["name", "price", "productCategory", "stock", "specification"];
-            const data = {};
-    
-            for (const el of credentials) {
-                data[`${document.getElementById(el).name}`] = document.getElementById(el).value;
-            }
-    
-            console.log("=======================================");
-            console.log(data);
-            
-    
-            document.getElementById('editProForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-    
-                const name = document.getElementById('name').value;
-                const description = document.getElementById('description').value;
-                const category = document.getElementById('productCategory').value;
-                const price = document.getElementById('price').value;
-                const stock = document.getElementById('stock').value;
-                const specification = document.getElementById('specification').value;
-    
-                const formData = new FormData();
-                formData.append('name', name);
-                formData.append('description', description);
-                formData.append('category', category);
-                formData.append('price', price);
-                formData.append('stock', stock);
-                formData.append('specification', specification);
-    
-                const imageFiles = imageInput.files;
-                for (let i = 0; i < imageFiles.length; i++) {
-                    formData.append('image', imageFiles[i]); 
-                }
-    
-                try {
-                    const response = await fetch(`/admin/editProduct/<%=product._id%>`, {
-                        method: 'POST',
-                        body: formData 
-                    });
-    
-                    const result = await response.json();
-    
-                    if (response.ok) {
-                        Swal.fire({
-                            title: 'Good job!',
-                            text: 'Product updated successfully!',
-                            icon: 'success',
-                            confirmButtonText: 'Cool'
-                        }).then(() => {
-                            window.location.href = '/admin/products';
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Oops...',
-                            text: 'Error updating product. Please try again.',
-                            icon: 'error',
-                            confirmButtonText: 'Retry'
-                        });
-                        console.error(result.error);
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        title: 'Oops...',
-                        text: 'Something went wrong! Please try again.',
-                        icon: 'error',
-                        confirmButtonText: 'Retry'
-                    });
-                    console.error(error);
-                }
-            });
-    
-            imageInput.addEventListener('change', function () {
-                const files = Array.from(this.files);
-                if (files.length + document.querySelectorAll('.existing-images .image-container').length > 3) {
-                    Swal.fire({
-                        title: 'Limit Exceeded',
-                        text: 'You can only upload up to 3 images.',
-                        icon: 'warning',
-                        confirmButtonText: 'OK'
-                    });
-                    this.value = '';
-                    return;
-                }
-                files.forEach(file => previewImage(file));
-            });
-    
-            function previewImage(file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imageContainer = document.createElement('div');
-                    imageContainer.className = 'image-preview-container mb-3';
-                    imageContainer.innerHTML = ` 
-                        <img src="${e.target.result}" class="preview-image">
-                        <button type="button" class="btn btn-primary crop-btn">Crop</button>
-                        <button type="button" class="btn btn-danger remove-btn">Remove</button>
-                    `;
-                    imagePreviewContainer.appendChild(imageContainer);
-    
-                    imageContainer.querySelector('.crop-btn').addEventListener('click', () => openCropModal(imageContainer.querySelector('img')));
-                    imageContainer.querySelector('.remove-btn').addEventListener('click', () => removeImage(imageContainer));
-                };
-                reader.readAsDataURL(file);
-            }
-    
-            function openCropModal(image) {
-                cropImage.src = image.src;
-                cropModal.style.display = 'block';
-                currentImagePreview = image;
-    
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(cropImage, {
-                    aspectRatio: 1,
-                    viewMode: 2,
-                    autoCropArea: 1,
-                    responsive: true
-                });
-            }
-    
-            saveCroppedImageBtn.addEventListener('click', function () {
-                if (cropper) {
-                    const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
-                    currentImagePreview.src = canvas.toDataURL();
-                    cropper.destroy();
-                    cropModal.style.display = 'none';
-    
-                    sendImageToBackend(canvas.toDataURL());
-                }
-            });
-    
-            cancelCropBtn.addEventListener('click', function () {
-                if (cropper) cropper.destroy();
-                cropModal.style.display = 'none';
-            });
-    
-            function removeImage(imageContainer) {
-                imagePreviewContainer.removeChild(imageContainer);
-            }
-    
-            function sendImageToBackend(croppedImageData) {
-                fetch('/upload-image', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        image: croppedImageData
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Image uploaded successfully', data);
-                        Swal.fire({
-                            title: 'Good job!',
-                            text: 'Image uploaded successfully!',
-                            icon: 'success',
-                            confirmButtonText: 'Awesome'
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Error uploading image:', error);
-                        Swal.fire({
-                            title: 'Oops...',
-                            text: 'Error uploading image. Please try again.',
-                            icon: 'error',
-                            confirmButtonText: 'Retry'
-                        });
-                    });
-            }
-        });
-    </script> -->
-    
 
     <script>
-        function removeExistingImage(img) {
-            console.log('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk');
-            
+        function removeExistingImage(img) {            
             let id=document.getElementById('imgId').value
-            console.log('mmmmmmmmmmmmm',id);
-            
+                        
             fetch(`/admin/remove-image/${id}`, {
                 method: 'POST',
                 headers: {
@@ -656,6 +461,7 @@
             });
         }
     </script>
+    
     </body>
 
     </html>

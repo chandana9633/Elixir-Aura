@@ -259,7 +259,6 @@
         document.getElementById('editAddressForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Define validation logic
             const fields = [
                 { id: 'phone', pattern: /^\d{10}$/, errorId: 'phoneError' },
                 { id: 'street', pattern: /.+/, errorId: 'streetError' },

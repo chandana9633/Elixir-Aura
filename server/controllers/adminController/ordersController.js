@@ -2,7 +2,7 @@ const Order=require('../../models/user/orderMoel')
 
 const allOrders = async (req, res) => {
     try {
-        const orders = await Order.find();
+        const orders = await Order.find().sort({ createdAt: -1 })
         res.render('admin/allOrders', { orders });
     } catch (error) {
         console.error(error);
@@ -10,31 +10,30 @@ const allOrders = async (req, res) => {
     }
 };
 
-// const updateOrderStatus = async (req, res) => {
-//     const { orderId } = req.params;
-//     const { status } = req.body;
-
-//     try {
-//         const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
-//         res.json({ success: true, message: 'Order status updated.', order });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ success: false, message: 'Failed to update order status.' });
-//     }
-// };
-
-
-const productDetailAdmin=async (req,res) => {
+const productDetailAdminShow = async (req, res) => {
     try {
-        res,render('admin/')
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId).populate('productItems.productId', 'name image price');
+
+        if (!order) {
+            return res.status(404).send("Order not found.");
+        }
+
+
+
+        res.render('admin/orderDetail', { order });
     } catch (error) {
-        
+        console.error("Error fetching order details:", error);
+        res.status(500).send("Internal Server Error");
     }
-}
+};
+
+
+
+
 
 
 module.exports={
     allOrders,
-    productDetailAdmin
-    // updateOrderStatus
+    productDetailAdminShow,
 }

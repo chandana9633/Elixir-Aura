@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .order-details {
+            margin: 20px 0;
+            padding: 10px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .product {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .product-image {
+            max-width: 100px;
+            margin-right: 20px;
+        }
+        .product-image img {
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .details-text p {
+            margin: 8px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .buttons .accept {
+            background-color: #4CAF50;
+            color: #fff;
+        }
+        .buttons .reject {
+            background-color: #F44336;
+            color: #fff;
+        }
+        .buttons button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Return Request</h1>
+        <div class="order-details">
+            <% order.productItems.forEach((item) => { %>
+            <div class="product">
+                <div class="product-image">
+                    <img src="/uploads/<%= item.productId.image[0] %>" alt="Product Image">
+                </div>
+                <div class="details-text">
+                    <p><strong>Product Name:</strong> <%= item.productId.name %></p>
+                    <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                </div>
+            </div>
+            <% }) %>
+            <div class="details-text">
+                <p><strong>Order ID:</strong> <%= order._id %></p>
+                <p><strong>Customer Name:</strong> <%= order.userName %></p>
+                <p><strong>Reason for Return:</strong> <%= order.returnReason %></p>
+                <p><strong>Request Date:</strong> <%= new Date(order.requestDate).toLocaleDateString() %></p>
+            </div>
+        </div>
+        <div class="buttons">
+            <button class="accept" onclick="handleAction('<%= order._id %>', 'accepted')">Accept</button>
+            <button class="reject" onclick="handleAction('<%= order._id %>', 'rejected')">Reject</button>
+        </div>
+    </div>
+</body>
+<script>
+    function handleAction(orderId,action) {        
+        const data = {
+            orderId: orderId,
+            returnReason:action==='accepted'?'Returned':'Rejected'
+        };
+
+    
+        fetch('/admin/returnRequestProcessing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Failed to process the action.');
+            }
+        })
+        .then(result => {
+            alert(`Action '${action}' for Order ID ${orderId} was successful.`);
+            console.log(result);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again.');
+        });
+    }
+</script>
+
+</html>

@@ -1,0 +1,181 @@
+<%-include('../layout/user/indexHeader')%>	
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h3 {
+            text-align: center;
+            color: #525151;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #f4f4f9;
+            color: #333;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .cart-btn, .remove-btn {
+            display: inline-block;
+            background: #1d1e1d;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+
+        .cart-btn:hover {
+            background: #666766;
+        }
+
+        .remove-btn {
+            background: #d9534f;
+        }
+
+        .remove-btn:hover {
+            background: #b52a25;
+        }
+
+        img {
+            max-width: 100px;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>My Wishlist</h3>
+        <% if (wishlist.length > 0) { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% wishlist.forEach(product => { %>
+                        <tr>
+                            <td><img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>"></td>
+                            <td><%= product.name %></td>
+                            <td>₹<%= product.price %></td>
+                            <td>
+                                <button onclick="handleAction('/wishlist/remove', '<%= product._id %>')" class="remove-btn">Remove</button>
+                                <button onclick="handleAction('/addCart', '<%= product._id %>')" class="cart-btn">Add to Cart</button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p>Your wishlist is empty.</p>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+
+async function handleAction(url, productId) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId }),
+        });
+
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                if (url === '/wishlist/remove') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Removed!',
+                        text: 'The item has been removed from your wishlist.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        location.reload(); 
+                    });
+                } else if (url === '/addCart') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: 'The item has been successfully added to your cart.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: data.message || 'Failed to complete action.',
+                });
+            }
+        } else {
+            console.error('Received non-JSON response.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Unexpected Error',
+                text: 'Unexpected server error. Please try again.',
+            });
+        }
+    } catch (error) {
+        console.error('Error performing action:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again.',
+        });
+    }
+}
+
+    </script>
+</body>
+</html>
+<%-include('../layout/user/footer')%>

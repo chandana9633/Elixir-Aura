@@ -1,0 +1,139 @@
+<%-include('../layout/admin/adminHeader')%>	
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Category Offer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-top: 50px;
+        }
+
+        .btn-submit {
+            background-color: #272727;
+            border-color: #252525;
+        }
+
+        .btn-submit:hover {
+            background-color: #4f4e4e;
+            border-color: #606060;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="form-container">
+                    <h2 class="text-center mb-4">Add Category Offer</h2>
+                    <form id="addOfferForm">
+                        <div class="mb-3">
+                            <label for="offerName" class="form-label">Categories</label>
+                            <select name="offerName" class="form-control" id="offerName">
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>"><%= category.name %></option>
+                                <% }); %>
+                            </select>
+                            <div class="error" id="offerNameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discountPercentage" class="form-label">Discount Percentage</label>
+                            <input type="number" class="form-control" id="discountPercentage" placeholder="Enter discount percentage">
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <div id="error-message" class="error-message"></div>
+                        <button type="submit" class="btn btn-dark btn-submit w-100">Add Offer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById('addOfferForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+    
+            const categoryId = document.getElementById('offerName').value.trim();
+            const discountPercentage = document.getElementById('discountPercentage').value.trim();
+            const endDate = document.getElementById('endDate').value.trim();
+    
+            if (!categoryId || !discountPercentage || !endDate) {
+                document.getElementById('error-message').textContent = 'Please fill all fields!';
+                return;
+            }
+    
+            const discount = parseFloat(discountPercentage);
+            if (discount < 0 || discount > 90) {
+                document.getElementById('error-message').textContent = 'Discount percentage must be between 0 and 90.';
+                return;
+            }
+    
+            const formData = {
+                categoryId,
+                discountPercentage: discount,
+                endDate
+            };
+    
+            try {
+                const response = await fetch('/admin/addOffers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+    
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Offer added successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '/admin/offerCategory';
+                    });
+                } else {
+                    document.getElementById('error-message').textContent = result.message || 'Failed to add offer.';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = 'An error occurred while adding the offer.';
+            }
+        });
+    
+        const inputs = document.querySelectorAll('#addOfferForm input');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                document.getElementById('error-message').textContent = '';
+            });
+        });
+    </script>
+    
+</body>
+
+</html>

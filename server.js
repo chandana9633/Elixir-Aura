@@ -9,19 +9,33 @@ const passport = require('passport');
 const session=require("express-session")
 const {v4:uuidv4}=require("uuid")
 const bodyParser = require('body-parser');
+const MongoStore = require('connect-mongo')
 const { log } = require('console');
 
 const app=express()
 
 app.use(express.json())
 
+// app.use(session({
+//     secret:uuidv4(),
+//     resave:false,
+//     saveUninitialized:false,
+//     cookie:{secure:false,
+//     maxAge: 5 * 60 * 1000}
+// }))
 app.use(session({
-    secret:uuidv4(),
-    resave:false,
-    saveUninitialized:false,
-    cookie:{secure:false,
-    maxAge: 5 * 60 * 1000}
-}))
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+    resave: false,
+    saveUninitialized: false, 
+    store: MongoStore.create({ mongoUrl: process.env.DB_URI }), 
+    cookie: { 
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      secure: false, // Use HTTPS in production
+      httpOnly: true, // Helps prevent XSS attacks
+      sameSite: 'strict' // Helps prevent CSRF attacks
+    }
+  }));
+  
 //-----------------set view engine-------------------
 app.set("view engine","ejs")
 console.log("osdhoihlkdsghpidshg");
@@ -55,7 +69,7 @@ app.use('/admin/',admminRouter)
 
 
 
-app.listen(4000,()=>{
+app.listen(PORT,()=>{
     console.log(`server is running at http://localhost:${PORT}`)
 })
 

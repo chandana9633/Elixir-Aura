@@ -1,12 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categories</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> -->
-
     <style>
         * {
     margin: 0;
@@ -160,8 +151,7 @@ body {
 }
 
     </style>
-<!-- </head>
-<body> -->
+
     <%- include('../layout/admin/adminHeader') %> 
     <div class="container">
         <div class="header">
@@ -169,17 +159,11 @@ body {
             <p>Add, edit or delete a category</p>
         </div>
 
-        <!-- Add this in the head section -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-        <!-- <div id="status-error-message" style="color: red; display: none; margin-top: 10px;"></div> -->
-
         <div class="main-content">
-            <!-- Category add form and table inside the same div -->
              <div>
             <div class="form-table-section">
-                <!-- Form for adding category -->
                 <form id="categoryForm" method="post">
                     <div class="form-container">
                         <label for="category-name">Name</label>
@@ -190,7 +174,6 @@ body {
                 </form>
                 
 
-                <!-- Table for showing categories -->
                 <div class="table-container">
                     <table class="category-table">
                         <thead>
@@ -220,7 +203,6 @@ body {
                                             <a class="dropdown-item" href="/admin/editCategory/<%= result._id %>">Edit</a>                                           
                                              <a class="dropdown-item" href="#" onclick="updateCategoryStatus('<%= result._id %>', 'Block')">Block</a>
                                             <a class="dropdown-item" href="#" onclick="updateCategoryStatus('<%= result._id %>', 'Active')">Unblock</a>
-                                            <!-- <a class="dropdown-item text-danger" href="#" onclick="softDeleteCategory('<%= result._id %>')">Delete</a> -->
                                             <a class="dropdown-item text-danger" href="#" onclick="deleteCategory('<%= result._id %>')">Delete</a>
                                         </div>
                                     </div>
@@ -238,8 +220,7 @@ body {
 
    
     <script>
- // Function to add a category
-document.getElementById('categoryForm').addEventListener('submit', async (event) => {
+    document.getElementById('categoryForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const cName = document.getElementById('category-name').value.trim();
@@ -341,46 +322,6 @@ document.getElementById('categoryForm').addEventListener('submit', async (event)
         }
     }
 }
-
- // Function to soft delete a category
-// async function softDeleteCategory(categoryId) {
-//     const statusMessageElement = document.getElementById('status-error-message');
-
-//     const result = await Swal.fire({
-//         title: 'Are you sure?',
-//         text: 'This category will be permanently deleted.',
-//         icon: 'warning',
-//         showCancelButton: true,
-//         confirmButtonText: 'Yes, delete it!',
-//         cancelButtonText: 'No, keep it'
-//     });
-
-//     if (result.isConfirmed) {
-//         try {
-//             const response = await fetch(`/admin/deleteCategory/${categoryId}`, { method: 'GET' });
-//             if (response.ok) {
-//                 document.getElementById(`category-row-${categoryId}`).remove();
-//                 statusMessageElement.style.display = 'none';
-
-//                 // Show success alert
-//                 Swal.fire({
-//                     title: 'Deleted!',
-//                     text: 'Category has been deleted successfully.',
-//                     icon: 'success',
-//                     confirmButtonText: 'OK'
-//                 });
-//             } else {
-//                 statusMessageElement.style.display = 'block';
-//                 statusMessageElement.textContent = 'Failed to delete category.';
-//             }
-//         } catch (error) {
-//             console.error('Error:', error);
-//             statusMessageElement.style.display = 'block';
-//             statusMessageElement.textContent = 'An error occurred while deleting the category.';
-//         }
-//     }
-// }
-
 
 async function deleteCategory(categoryId) {
         const statusMessageElement = document.getElementById('status-error-message');

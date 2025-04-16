@@ -12,10 +12,10 @@ const loadCategoty=async (req,res) => {
 
 const loadEditCategery=async (req,res) => {
     try {
-        console.log('inside edit page')
+       
         const categoryId=req.params.id
         const category=await Category.findById(categoryId)
-        console.log('caaattt',category);
+       
         
 
         res.render('admin/editCategory',{category})
@@ -25,21 +25,18 @@ const loadEditCategery=async (req,res) => {
     }
 }
 
-// Controller Function
 const editCategory = async (req, res) => {
     try {
       const { categoryName } = req.body;
       const categoryId = req.params.id;
   
-      // Check if a category with the new name already exists
       const existingCategory = await Category.findOne({ name: categoryName });
       if (existingCategory && existingCategory._id.toString() !== categoryId) {
         return res.status(400).json({ error: 'Category with this name already exists' });
       }
   
-      // Update category name
       await Category.findByIdAndUpdate(categoryId, { name: categoryName });
-      res.redirect('/admin/categories'); // Redirect to categories list page after update
+      res.redirect('/admin/categories'); 
     } catch (error) {
       console.error('Error updating category:', error);
       res.status(500).send('Server Error');
@@ -47,42 +44,17 @@ const editCategory = async (req, res) => {
   };
     
 
-// const deleteCategory = async (req, res) => {
-//     const categoryId = req.params.id; 
-//     console.log('Category ID to delete:', categoryId);
-
-//     try {
-//         const deletedCategory = await Category.findByIdAndDelete(categoryId);
-
-//         if (!deletedCategory) {
-//             return res.status(404).send('Category not found');
-//         }
-
-//         console.log('Deleted Category:', deletedCategory); 
-//         res.redirect('/admin/categories'); 
-
-//     } catch (error) {
-//         console.error('Error deleting category:', error);
-//         res.status(500).send('Server error');
-//     }
-// };
-
-
-
-
 const addingCategory = async (req, res) => {
     try {
         const { cName } = req.body;
-        console.log('Request Body:', req.body);
+  
 
-        // Check if a category with the exact name already exists
         const existingCategory = await Category.findOne({ name: { $regex: new RegExp(`^${cName}$`, 'i') } }); // Case-insensitive check
 
         if (existingCategory) {
             return res.status(400).json({ message: 'Category with the same name already exists' });
         }
 
-        // Proceed to add a new category since no exact match was found
         const newCategory = new Category({
             name: cName,
         });
@@ -97,31 +69,6 @@ const addingCategory = async (req, res) => {
 };
 
 
-// // category.controller.js
-
-// // Soft delete the category by updating its status to 'Deleted'
-// const deleteCategory = async (req, res) => {
-//     const categoryId = req.params.id;
-
-//     try {
-//         const category = await Category.findById(categoryId);
-
-//         if (!category) {
-//             return res.status(404).send('Category not found');
-//         }
-
-//         // Soft delete by updating the status to 'Deleted'
-//         category.status = 'Deleted';
-//         await category.save();
-
-//         res.redirect('/admin/categories');
-//     } catch (error) {
-//         console.error('Error deleting category:', error);
-//         res.status(500).send('Server error');
-//     }
-// };
-
-// Change the status of a category to either 'Blocked' or 'Active'
 const changeCategoryStatus = async (req, res) => {
     const { categoryId, action } = req.body;
 
@@ -158,8 +105,7 @@ const deleteCategory = async (req, res) => {
             return res.status(404).send('Category not found');
         }
 
-        console.log('Deleted Category:', deletedCategory);
-        res.status(200).send('Category permanently deleted'); // Send success message after deletion
+        res.status(200).send('Category permanently deleted');
 
     } catch (error) {
         console.error('Error deleting category:', error);
@@ -175,6 +121,4 @@ module.exports={
     editCategory,
     deleteCategory,
     changeCategoryStatus
-    
-
 }

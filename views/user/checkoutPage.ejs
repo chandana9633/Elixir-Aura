@@ -77,9 +77,6 @@
             cursor: pointer;
             font-size: 16px;
         }
-        /* .place-order-btn :hover{
-            background-color: #717271;
-        } */
         .modal {
             display: none;
             position: fixed;
@@ -113,37 +110,38 @@
             padding: 10px;
             cursor: pointer;
         }
-
         .address-card {
-    display: flex; /* Use flexbox for consistent alignment */
-    justify-content: space-between; /* Space between address text and Edit button */
-    align-items: center; /* Vertically center-align all elements */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 5px;
     margin-bottom: 10px;
     cursor: pointer;
-    position: relative; /* Ensures Edit button placement */
+    position: relative; 
 }
 
 .address-card span {
-    flex-grow: 1; /* Allow the address text to grow and take available space */
-    margin-right: 15px; /* Add spacing between the text and the button */
-    display: block; /* Ensures the text block stays consistent */
-    word-break: break-word; /* Prevents long words from overflowing */
+    flex-grow: 1;
+    margin-right: 15px; 
+    display: block;
+    word-break: break-word; 
 }
 
-.edit-address-btn {
-    position: static; /* Remove absolute positioning for better alignment */
+.edit-address-btn, .remove-address-btn {
     padding: 8px 15px;
-    background-color: #1c1d1c;
-    color: white;
     border: none;
     border-radius: 5px;
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin-left: auto; /* Push button to the far right of the flex container */
+}
+
+.edit-address-btn {
+    background-color: #1c1d1c;
+    color: white;
+    margin-left: auto;
 }
 
 .edit-address-btn:hover {
@@ -154,18 +152,81 @@
     outline: none;
 }
 
-/* Optional: Make address card responsive for small screens */
+.remove-address-btn {
+    background-color: #e74c3c; 
+    color: white;
+    margin-left: 10px; 
+}
+
+.remove-address-btn:hover {
+    background-color: #c0392b; 
+}
+
+.remove-address-btn:focus {
+    outline: none;
+}
+
 @media (max-width: 600px) {
     .address-card {
-        flex-direction: column; /* Stack elements vertically on smaller screens */
-        align-items: flex-start; /* Align items to the left */
+        flex-direction: column;
+        align-items: flex-start; 
     }
 
-    .edit-address-btn {
-        margin-left: 0; /* Reset margin for better alignment on small screens */
-        margin-top: 10px; /* Add spacing between button and text */
-        width: 100%; /* Make the button full width */
+    .edit-address-btn, .remove-address-btn {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
     }
+}
+
+.coupon-section {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#coupon-code {
+    padding: 10px;
+    font-size: 16px;
+    width: 300px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+#coupon-code:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.apply-coupon-btn {
+    background: linear-gradient(90deg, #d4cb20, #efbb2c);
+    border: none;
+    color: rgb(32, 31, 31);
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.apply-coupon-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.apply-coupon-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
 }
 
     </style>
@@ -174,18 +235,15 @@
     <div class="container">
         <h2>Checkout</h2>
 
-        <!-- Address Section -->
         <div class="address-section">
             <h3>Select Address</h3>
             <% user.address.forEach((add) => { %>
                 <div class="address-card">
-                    <!-- Radio button for address selection -->
                     <input type="radio" name="address" value="<%= add._id %>" id="address_<%= add._id %>">
                     <label for="address_<%= add._id %>">
                         <span><%= add.street %>, <%= add.city %>, <%= add.state %>, <%= add.pincode %>, <%= add.country %></span>
                     </label>
                     
-                    <!-- Edit Button for the address -->
                     <button class="edit-address-btn" 
                             data-id="<%= add._id %>" 
                             data-street="<%= add.street %>" 
@@ -193,139 +251,321 @@
                             data-state="<%= add.state %>" 
                             data-pincode="<%= add.pincode %>" 
                             data-country="<%= add.country %>">Edit</button>
+                    
+                    <button class="remove-address-btn" 
+                            data-id="<%= add._id %>">Remove</button>
                 </div>
             <% }); %>
         
-            <!-- Add New Address Button -->
             <button class="add-address-btn">+ Add New Address</button>
         </div>
         
-
-        <!-- Add Address Modal -->
-        <div class="modal" id="add-address-modal">
+        
+            <div class="modal" id="add-address-modal">
             <div class="modal-content">
                 <h3>Add New Address</h3>
                 <form id="add-address-form" data-address-id="<%= address._id %>">
-                    <input type="text" name="street" placeholder="Street Address" required />
-                    <input type="text" name="city" placeholder="City" required />
-                    <input type="text" name="state" placeholder="State" required />
-                    <input type="text" name="pincode" placeholder="Pincode" required />
-                    <input type="text" name="country" placeholder="Country" required />
+                    <div class="input-container">
+                        <input type="text" name="street" placeholder="Street Address" required />
+                        <p class="error-message" id="street-error"></p>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" name="city" placeholder="City" required />
+                        <p class="error-message" id="city-error"></p>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" name="state" placeholder="State" required />
+                        <p class="error-message" id="state-error"></p> 
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" name="pincode" placeholder="Pincode" required />
+                        <p class="error-message" id="pincode-error"></p>
+                    </div>
+
+                    <div class="input-container">
+                        <input type="text" name="country" placeholder="Country" required />
+                        <p class="error-message" id="country-error"></p> 
+                    </div>
+
                     <button type="submit">Save</button>
                     <button type="button" class="close-modal">Cancel</button>
                 </form>
+
             </div>
         </div>
 
-        <!-- Order Summary Section -->
         <div class="summary-section">
-            <h3>Order Summary</h3>
-            <% cart.items.forEach((item) => { %>
-                <div class="summary-item">
-                    <span><%= item.productId.name %>:</span>
-                    <span><%= item.quantity %> x ₹<%= item.productId.price %></span>
-                </div>
-            <% }); %>
-            <hr />
+        <h3>Order Summary</h3>
+        <% cart.items.forEach((item) => { 
+            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
+            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
+            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
+            const itemTotal = finalDiscountedPrice * item.quantity;
+        %>
             <div class="summary-item">
-                <strong>Total:</strong>
-                <strong>₹<%= cart.grandTotal%></strong>
+                <span><%= item.productId.name %>:</span>
+                
+                <span><%= item.quantity %> x ₹<%= Math.round(item.actualPrice) %></span>
+                
+                <span>= ₹<%= Math.round(cart.grandTotal) %></span>
             </div>
-        </div>
+        <% }); %>
 
-        <!-- Payment Section -->
+
+    </div>
+
+    <hr />
+
+<div class="coupon-section">
+    <input type="text" id="coupon-code" placeholder="Paste coupon code here" />
+    <button id="apply-coupon-btn" class="apply-coupon-btn">Apply Coupon</button>
+    <button id="remove-coupon-btn" class="apply-coupon-btn" style="display: none;">Remove Coupon</button>
+</div>
+<p id="coupon-message" style="color: green; display: none;"></p>
+<p id="coupon-error" style="color: red; display: none;"></p>
+
+<a href="/coupon" style="text-decoration: none;">Click To Find Coupons !</a>
+
+<hr />
+<div class="summary-item">
+    <span>Discount:</span>
+    <span id="cart-dis">
+       - ₹<%= cart?.discount ? Math.round(cart.discount) : "0" %>
+    </span>
+</div>
+<div class="summary-item">
+    <span>Coupon Discount:</span>
+    <span id="coupon-dis">
+        ₹<%= cart?.couponDiscount ? Math.round(cart.couponDiscount) : "0" %>
+    </span>
+</div>
+
+<div class="summary-item">
+    <span>Subtotal (<%= cartItems.length %> items)</span>
+    <span>
+        ₹<%= Math.round(cartItems.reduce((acc, item) => {
+            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
+            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
+            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
+            return acc + (finalDiscountedPrice * item.quantity);
+        }, 0)) %>
+
+        
+    </span>
+</div>
+
+<div class="summary-item">
+    <span>Total Amount:</span>
+    <span id="grandTotal"> 
+        ₹<%= Math.round(cartItems.reduce((acc, item) => {
+            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
+            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
+            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
+            return acc + (finalDiscountedPrice * item.quantity);
+        }, 0) - (cart?.couponDiscount || 0)) %>
+    </span>
+</div>
         <div class="payment-section">
             <h3>Payment Method</h3>
             <div class="payment-method">
                 <input type="radio" name="payment" id="COD" checked />
                 <label for="COD">Cash on Delivery</label>
             </div>
-            <!-- <div class="payment-method">
+            <div class="payment-method">
                 <input type="radio" name="payment" id="Razorpay" />
-                <label for="Razorpay">Razorpay</label>
-            </div> -->
+                <label for="Razorpay">Online payment</label>
+            </div>
+            <div class="payment-method">
+                <input type="radio" name="payment" id="Wallet" />
+                <label for="Wallet">Wallet</label>
+            </div>
+            <p>
+               Wallet Balance: 
+                <span style="color: black; font-weight: 800;">
+                  ₹<%= wallet && wallet.balance ? wallet.balance : 0 %>
+                </span>
+              </p>
         </div>
 
-        <!-- Place Order Button -->
         <button class="place-order-btn">Place Order</button>
     </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    document.querySelector('.add-address-btn').addEventListener('click', () => {
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>document.querySelector('.add-address-btn').addEventListener('click', () => {
+    document.querySelector('#add-address-modal').style.display = 'flex';
+    document.querySelector('#add-address-form').reset();
+    document.querySelector('#add-address-form').dataset.addressId = ''; 
+    clearValidationErrors(); 
+});
+
+document.querySelector('.close-modal').addEventListener('click', () => {
+    document.querySelector('#add-address-modal').style.display = 'none';
+    clearValidationErrors(); 
+});
+
+document.querySelectorAll('.edit-address-btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+        const addressData = e.target.dataset;
+        
+        document.querySelector('#add-address-form [name="street"]').value = addressData.street;
+        document.querySelector('#add-address-form [name="city"]').value = addressData.city;
+        document.querySelector('#add-address-form [name="state"]').value = addressData.state;
+        document.querySelector('#add-address-form [name="pincode"]').value = addressData.pincode;
+        document.querySelector('#add-address-form [name="country"]').value = addressData.country;
+        
+        document.querySelector('#add-address-form').dataset.addressId = addressData.id;
+
         document.querySelector('#add-address-modal').style.display = 'flex';
-        // Clear any previous data from the form (for new address)
-        document.querySelector('#add-address-form').reset();
-        document.querySelector('#add-address-form').dataset.addressId = ''; // Reset the addressId
+    });
+});
+
+document.querySelector('#add-address-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    clearValidationErrors();
+
+    const formData = Object.fromEntries(new FormData(e.target).entries());
+    const addressId = e.target.dataset.addressId;
+
+    const validationErrors = validateAddressForm(formData);
+    if (validationErrors.length > 0) {
+        displayValidationErrors(validationErrors);
+        return;
+    }
+
+    const method = addressId ? 'PUT' : 'POST'; 
+    const url = addressId ? `/updateAddress/${addressId}` : '/addNewAddress'; 
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
     });
 
-    // Close the Add/Edit Address Modal
-    document.querySelector('.close-modal').addEventListener('click', () => {
-        document.querySelector('#add-address-modal').style.display = 'none';
-    });
-
-    // Edit Address - Open Modal with Existing Data
-    document.querySelectorAll('.edit-address-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const addressData = e.target.dataset;
-            
-            // Pre-fill the modal with the current address details
-            document.querySelector('#add-address-form [name="street"]').value = addressData.street;
-            document.querySelector('#add-address-form [name="city"]').value = addressData.city;
-            document.querySelector('#add-address-form [name="state"]').value = addressData.state;
-            document.querySelector('#add-address-form [name="pincode"]').value = addressData.pincode;
-            document.querySelector('#add-address-form [name="country"]').value = addressData.country;
-            
-            // Store the address ID in the modal for later use
-            document.querySelector('#add-address-form').dataset.addressId = addressData.id;
-
-            // Show the modal
-            document.querySelector('#add-address-modal').style.display = 'flex';
+    if (response.ok) {
+        Swal.fire({
+            title: 'Success!',
+            text: addressId ? 'Address Updated Successfully!' : 'Address Added Successfully!',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            location.reload(); 
         });
-    });
+    } else {
+        Swal.fire({
+            title: 'Failed!',
+            text: 'Failed to save address. Try again later.',
+            icon: 'error',
+            confirmButtonText: 'Try Again'
+        });
+    }
+});
+function validateAddressForm(formData) {
+    const errors = [];
 
-    // Add/Edit Address Form Submission
-    document.querySelector('#add-address-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target).entries());
-        const addressId = e.target.dataset.addressId; // Get the address ID if editing
+    if (!formData.street || formData.street.trim() === '') {
+        errors.push({ field: 'street', message: 'Street Address is required' });
+    }
 
-        // Determine whether it's an update or new address
-        const method = addressId ? 'PUT' : 'POST'; 
-        const url = addressId ? `/updateAddress/${addressId}` : '/addNewAddress'; 
+    if (!formData.city || formData.city.trim() === '') {
+        errors.push({ field: 'city', message: 'City is required' });
+    }
 
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
+    if (!formData.state || formData.state.trim() === '') {
+        errors.push({ field: 'state', message: 'State is required' });
+    }
+
+    const pincodeRegex = /^\d{6}$/; 
+    if (!formData.pincode || !pincodeRegex.test(formData.pincode)) {
+        errors.push({ field: 'pincode', message: 'Pincode should be a 6 digit number' });
+    }
+
+    if (!formData.country || formData.country.trim() === '') {
+        errors.push({ field: 'country', message: 'Country is required' });
+    }
+
+            return errors;
+        }
+
+
+    document.querySelectorAll('.remove-address-btn').forEach(button => {
+    button.addEventListener('click', async (e) => {
+        const addressId = e.target.dataset.id;
+
+        const confirmation = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this address?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Delete',
+            cancelButtonText: 'Cancel'
         });
 
-        if (response.ok) {
-            // SweetAlert Success
-            Swal.fire({
-                title: 'Success!',
-                text: addressId ? 'Address Updated Successfully!' : 'Address Added Successfully!',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                location.reload(); // Reload the page to reflect the changes
-            });
-        } else {
-            Swal.fire({
-                title: 'Failed!',
-                text: 'Failed to save address. Try again later.',
-                icon: 'error',
-                confirmButtonText: 'Try Again'
-            });
+        if (confirmation.isConfirmed) {
+            try {
+                const response = await fetch(`/removeAddress/${addressId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Address has been removed successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload(); 
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to delete address. Please try again later.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error deleting address:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again later.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
     });
+});
+
+        function displayValidationErrors(errors) {
+            document.querySelectorAll('.error-message').forEach(element => {
+                element.textContent = '';
+            });
+
+            errors.forEach(error => {
+                const errorElement = document.getElementById(`${error.field}-error`);
+                if (errorElement) {
+                    errorElement.textContent = error.message;
+                }
+            });
+        }
+
+        function clearValidationErrors() {
+            document.querySelectorAll('.error-message').forEach(errorElement => {
+                errorElement.textContent = ''; 
+            });
+        }
 
     document.querySelector('.place-order-btn').addEventListener('click', async () => {
-    // Get the selected address
     const selectedAddressElement = document.querySelector('input[name="address"]:checked');
     
-    // Check if an address is selected
     if (!selectedAddressElement) {
         Swal.fire({
             title: 'Error!',
@@ -333,14 +573,14 @@
             icon: 'error',
             confirmButtonText: 'OK'
         });
-        return; // Stop execution if no address is selected
+        return; 
     }
 
     const selectedAddressId = selectedAddressElement.value;
 
-    // Get the selected payment method
     const paymentMethodElement = document.querySelector('input[name="payment"]:checked');
-
+    console.log(paymentMethodElement,'element idddddddd');
+    
     if (!paymentMethodElement) {
         Swal.fire({
             title: 'Error!',
@@ -348,12 +588,25 @@
             icon: 'error',
             confirmButtonText: 'OK'
         });
-        return; // Stop execution if no payment method is selected
+        return; 
     }
 
-    const paymentMethod = paymentMethodElement.id;
+
+     paymentMethod = paymentMethodElement.id;
 
     try {
+
+       var grandTotal=document.getElementById('grandTotal').innerText
+       grandTotal = grandTotal.replace(/₹/g, '').trim();
+        console.log('check hereeeeeeeeeeee',grandTotal);
+        if (paymentMethod.toLowerCase() === 'razorpay') {
+
+           console.log("Initiating Razorpay Payment with Total:",grandTotal);
+            return initiateRazorPayPayment(selectedAddressId, paymentMethod, grandTotal);
+        }
+
+        console.log('whyyyyyyyyyyyyyyyyyyyyy',paymentMethod);
+
         const response = await fetch('/order/place', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -363,7 +616,6 @@
         const result = await response.json();
 
         if (response.ok) {
-            // Redirect to success page
             window.location.href = `/successOrder/${result.orderId}`;
         } else {
             Swal.fire({
@@ -374,6 +626,8 @@
             });
         }
     } catch (error) {
+        console.log('cheeee',error);
+        
         Swal.fire({
             title: 'Error!',
             text: 'Something went wrong while placing the order. Please try again.',
@@ -384,6 +638,204 @@
 });
 
 </script>
+
+
+<script>
+  const initiateRazorPayPayment = async (addressId, paymentMethod, Total) => {
+    try {
+        const response = await fetch("/razor-key", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch Razorpay key.");
+
+        const data = await response.json();
+        console.log(data, "this is our razorpay instant........");
+
+        const razorOrder = await fetch("/razor-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: parseInt(Total) }),
+        });
+
+        const order = await razorOrder.json();
+        console.log(order, "this is our razorpay orders........");
+
+        let options = {
+            key: data.key,
+            amount: parseInt(Total) * 100,
+            currency: "INR",
+            name: "Elixir Aura",
+            description: "Order Payment",
+            order_id: order.order.id,
+
+            handler: async function (response) {
+                try {
+                    const saveOrderResponse = await fetch("/OrderInfo", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            addressId: addressId,
+                            paymentMethod: paymentMethod,
+                            GrandTotal: Total,
+                            paymentStatus:"Paid",
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpaySignature: response.razorpay_signature,
+                        }),
+                    });
+
+                    if (!saveOrderResponse.ok) throw new Error("Failed to save order.");
+                    const result = await saveOrderResponse.json();
+
+                    if (result.success) {
+                        window.location.href = `/successOrder/${result.orderId}`;
+                    } else {
+                        Swal.fire({
+                            title: "Error",
+                            text: `Error: ${result.message}`,
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error saving order:", error);
+                    Swal.fire({
+                        title: "Error",
+                        text: "An error occurred while saving the order.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            },
+
+        modal: {
+        ondismiss: async function () {
+        console.log("Payment modal closed by user.");
+        try {
+            const saveOrderResponse = await fetch("/OrderInfo", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    addressId: addressId,
+                    paymentMethod: paymentMethod,
+                    GrandTotal: Total,
+                    paymentStatus: "Failed", 
+                    razorpayOrderId: order.order.id,
+                    razorpayPaymentId: null, 
+                    razorpaySignature: null,
+                }),
+            });
+
+            if (!saveOrderResponse.ok) {
+                throw new Error("Failed to save order on failure.");
+            }
+
+            const result = await saveOrderResponse.json();
+
+            await Swal.fire({
+                title: "Payment Failed",
+                text: "Your order has been saved as pending. Please retry payment.",
+                icon: "warning",
+                confirmButtonText: "OK",
+            });
+
+            window.location.href = "/orders";
+        } catch (error) {
+            console.error("Error saving pending order:", error);
+            await Swal.fire({
+                title: "Error",
+                text: "An error occurred while saving the pending order.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }
+    },
+    },
+            prefill: {
+                name: "John Doe",
+                email: "john.doe@example.com",
+                contact: "9000090000",
+            },
+            notes: {
+                address: "Razorpay Corporate Office",
+            },
+            theme: {
+                color: "#1818c4",
+            },
+        };
+
+        const razor = new window.Razorpay(options);
+        razor.open();
+    } catch (error) {
+        console.error("Error initiating Razorpay payment:", error);
+        Swal.fire({
+            title: "Error",
+            text: "An error occurred while initiating the payment.",
+            icon: "error",
+            confirmButtonText: "OK",
+        });
+    }
+};
+
+</script>
+
+<script>document.getElementById('apply-coupon-btn').addEventListener('click', async () => {
+    const couponCode = document.getElementById('coupon-code').value;
+    const response = await fetch('/applyCoupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode }),
+    });
+
+    const result = await response.json();
+
+    console.log(result);
+    
+
+    if (result.success) {
+
+        console.log(result.data.newTotal,'=========');
+        
+
+        document.getElementById('coupon-message').style.display = 'block';
+        document.getElementById('coupon-message').innerText = 'Coupon Applied Successfully!';
+
+
+        document.getElementById('coupon-dis').innerText = `- ₹${result.data.discount}`;
+        document.getElementById('grandTotal').innerText = ` ₹${result.data.newTotal}`;
+        
+
+        document.getElementById('coupon-discount').innerText = `- ₹${result.discount}`;
+        document.getElementById('final-total').innerText = `₹${result.finalAmount}`;
+        document.getElementById('remove-coupon-btn').style.display = 'inline';
+       
+    } else {
+        document.getElementById('coupon-error').style.display = 'block';
+        document.getElementById('coupon-error').innerText = result.message;
+    }
+});
+
+document.getElementById('remove-coupon-btn').addEventListener('click', async () => {
+    const response = await fetch('/remove-coupon', { method: 'POST' });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('coupon-message').style.display = 'none';
+        document.getElementById('coupon-discount').innerText = '₹0.00';
+        document.getElementById('final-total').innerText = `₹${result.finalAmount}`;
+        document.getElementById('remove-coupon-btn').style.display = 'none';
+    }
+});
+
+</script>
+
 
 </body>
 </html>

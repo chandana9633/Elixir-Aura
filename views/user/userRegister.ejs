@@ -83,7 +83,6 @@
 			cursor: pointer;
 			border-radius: 20px;
 			background: linear-gradient(45deg, #171718, #141414);
-			/*Button Color*/
 			color: #fff;
 			font-weight: bold;
 			transition: 0.5s;
@@ -91,7 +90,6 @@
 
 		.infinity-form button[type="submit"]:hover {
 			background: linear-gradient(45deg, #5a5b5e, #18191a);
-			/*Button color when hover*/
 		}
 
 		.forget-link,
@@ -146,27 +144,22 @@
 			background: hsla(195, 78%, 54%, 1);
 		}
 	</style>
-	<!-- Main Container -->
 	<div class="container-fluid">
 		<div class="row">
-			<!-- IMAGE CONTAINER BEGIN -->
 			<div class="col-lg-6 col-md-6 d-none d-md-block infinity-image-container"></div>
-			<!-- IMAGE CONTAINER END -->
 
-			<!-- FORM CONTAINER BEGIN -->
 			<div class="col-lg-6 col-md-6 infinity-form-container">
-				<!-- FORM BEGIN -->
 				<div class="col-lg-9 col-md-12 col-sm-8 col-xs-12 infinity-form">
-					<!-- Company Logo -->
+
 					<div class="text-center mb-3 mt-5">
 						<!-- <img src="logo.png" width="150px"> -->
 					</div>
 					<div class="text-center mb-4">
 						<h4>Create an account</h4>
 					</div>
-					<!-- Form -->
+
 					<form id="userSignUp" class="px-3" novalidate >
-						<!-- Input Box -->
+
 						<div class="form-input">
 							<span><i class="fa fa-user"></i></span>
 							<input type="text" name="name" id="name" placeholder="Full Name" tabindex="10">
@@ -189,30 +182,22 @@
 								<div id="cPassword-error" class="error"></div>
 						</div>
 
-						<!-- Register Button -->
 						<div class="mb-3">
 							<button type="submit" class="btn btn-block">Register</button>
 						</div>
 						<div class="text-center mb-2">
 							<div class="text-center mb-3" style="color: #777;">or login with</div>
 
-							<!-- Facebook Button -->
-							<!-- <a href="" class="btn btn-social btn-facebook">facebook</a> -->
-
-							<!-- Google Button -->
+						
 							<a href="/auth/google" class="btn btn-social btn-google">google</a>
 
-							<!-- Twitter Button -->
-							<!-- <a href="" class="btn btn-social btn-twitter">twitter</a>		 -->
 						</div>
 						<div class="text-center mb-5" style="color: #777;">Already have an account?
 							<a class="login-link" href="/userLogin">Login here</a>
 						</div>
 					</form>
 				</div>
-				<!-- FORM END -->
 			</div>
-			<!-- FORM CONTAINER END -->
 		</div>
 	</div>
 </body>

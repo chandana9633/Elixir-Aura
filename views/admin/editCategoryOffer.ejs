@@ -1,0 +1,126 @@
+<%-include('../layout/admin/adminHeader')%>	
+
+<style>
+    .form-container {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+
+    .btn-submit {
+        background-color: #262626;
+        border-color: #29292a;
+        color: #fff;
+    }
+
+    .btn-submit:hover {
+        background-color: #525353;
+        border-color: #4d4d4d;
+    }
+
+    .error-message {
+        color: red;
+        margin-top: 1rem;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="form-container">
+                    <h2 class="text-center mb-4">Edit Category Offer</h2>
+                    <form id="editOfferForm">
+                        <div class="mb-3">
+                            <label for="offerName" class="form-label">Category</label>
+                            <select name="offerName" class="form-control" id="offerName">
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category._id %>" <%= category._id.equals(categoryoffer.categoryId._id) ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                            <div class="error" id="offerNameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="discountPercentage" class="form-label">Discount Percentage</label>
+                            <input type="number" class="form-control" id="discountPercentage" value="<%= categoryoffer.discountPercentage %>" min="0" max="90">
+                        </div>
+                        <div class="mb-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" value="<%= new Date(categoryoffer.endDate).toISOString().split('T')[0] %>">
+                        </div>
+                        <div id="error-message" class="error-message"></div>
+                        <button type="submit" class="btn btn-dark btn-submit w-100">Save Offer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById('editOfferForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+    
+            const offerId = '<%= categoryoffer._id %>';
+            const categoryId = document.getElementById('offerName').value.trim();
+            const discountPercentage = document.getElementById('discountPercentage').value.trim();
+            const endDate = document.getElementById('endDate').value.trim();
+    
+            if (!categoryId || !discountPercentage || !endDate) {
+                document.getElementById('error-message').textContent = 'Please fill in all fields!';
+                return;
+            }
+    
+            const discount = parseFloat(discountPercentage);
+    
+            if (discount < 0 || discount > 90) {
+                document.getElementById('error-message').textContent = 'Discount percentage must be between 0 and 90.';
+                return;
+            }
+    
+            const formData = {
+                categoryId,
+                discountPercentage: discount,
+                endDate
+            };
+    
+            try {
+                const response = await fetch(`/admin/updateCategoryOffer/${offerId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+    
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Offer updated successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = '/admin/offerCategory';
+                    });
+                } else {
+                    document.getElementById('error-message').textContent = result.message;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent = 'An error occurred while updating the offer.';
+            }
+        });
+    </script>
+</body>
+</html>

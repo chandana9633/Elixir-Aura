@@ -21,40 +21,133 @@
 .product-img img {
     object-fit: cover;
 }
-/* Custom styling for price section */
 .price-section {
     margin-top: 20px;
 }
 
-/* Style for the original price */
 .original-price {
-    font-size: 1em; /* Larger font size for the original price */
+    font-size: 1em; 
     font-weight: bold;
-    color: #1d1d1d; /* Use a contrasting color (like orange) */
+    color: #1d1d1d; 
     display: flex;
     align-items: center;
 }
 
 .currency-symbol {
-    font-size: 1.2em; /* Adjust currency symbol size */
-    margin-right: 5px; /* Space between currency and price */
+    font-size: 1.2em;
+    margin-right: 5px;
 }
 
 .price {
-    font-size: 2em; /* Larger price text */
+    font-size: 2em; 
 }
 
-/* For out of stock messages */
 .out-of-stock {
     color: red;
     font-weight: bold;
     font-size: 1.5em;
 }
 
-
-
 </style>
-    <!-- Page Add Section Begin -->
+
+
+
+<style>
+    .product-img {
+        width: 100%;
+        height: auto;
+        overflow: hidden; 
+        position: relative;
+    }
+    
+    .product-img img {
+        width: 100%;
+        transition: transform 0.3s ease; 
+    }
+    
+    .product-img.zoomed img {
+        transform: scale(1.5); 
+    }
+    
+    .product-img img {
+        object-fit: cover;
+    }
+    .price-section {
+        margin-top: 20px;
+    }
+    
+    .original-price {
+        font-size: 1em; 
+        font-weight: bold;
+        color: #1d1d1d; 
+        display: flex;
+        align-items: center;
+    }
+    
+    .currency-symbol {
+        font-size: 1.2em; 
+        margin-right: 5px;
+    }
+    
+    .price {
+        font-size: 1.5em; 
+    }
+    
+    .out-of-stock {
+        color: red;
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        align-items: center;
+    }
+    
+    .primary-btn {
+        background-color: #e9f0eb;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .primary-btn:hover {
+        background-color: #cbcdcb;
+    }
+    
+    .heart-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+        color: #ff6f61;
+        transition: color 0.3s ease;
+    }
+    
+    .heart-btn:hover {
+        color: #d9534f;
+    }
+
+    .original-price {
+    font-size: 18px;
+    text-decoration: line-through;
+    color: grey;
+}
+
+.discounted-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #202020;
+}
+
+
+    </style>
     <section class="page-add">
         <div class="container">
             <div class="row">
@@ -62,22 +155,17 @@
                     <div class="page-breadcrumb">
                         <h2> Luxury Perfume <span>.</span></h2>
                         <a href="/">Home</a>
-                        <a href="#">Shop</a>
-                        <!-- <a class="active" href="#">Night Dresses</a> -->
+                        <a href="/shopPage">Shop</a>
                     </div>
                 </div>
-                <!-- <div class="col-lg-8">
-                    <img src="/userHome/img/add.jpg" alt="">
-                </div> -->
+               
             </div>
         </div>
     </section>
 
-    <!-- Product Page Section Beign -->
     <section class="product-page">
         <div class="container">
             <div class="product-control">
-                <!-- Optional: Previous and Next buttons for product navigation -->
             </div>
             <div class="row">
                 <div class="col-lg-6">
@@ -95,24 +183,46 @@
     
                 <div class="col-lg-6">
                     <div class="product-content">
-                        <h2><%= pro.name %></h2>    
-                        <div class="pc-meta">
-                            <!-- <div class="rating">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                            </div> -->
-    
-                            <!-- Show only the original price -->
-                            <div class="price-section">
-                                <div class="original-price">
-                                    <span class="currency-symbol">₹</span><span class="price"><%= pro.price %></span>
+                        <h2><%= pro.name %></h2>
+                        
+                        <div class="price-section">
+                            <% if (pro.discountprice) { %>
+                                <div class="original-price" style="text-decoration: line-through; color: grey; font-size: 24px; font-weight: bold;">
+                                    <span class="currency-symbol">₹</span>
+                                    <span class="price"><%= pro.price %></span>
                                 </div>
-                            </div>
+                        
+                                <div class="discounted-price" style="font-size: 24px; font-weight: bold; color: #148a12;">
+                                    <span class="currency-symbol">₹</span>
+                               <span class="price">
+                                            <%= Math.round(pro.price - (pro.price * (pro.discountprice / 100))) %>
+                                        </span>
+                                        <span style="color: grey; font-size: 16px;">
+                                            (<%= pro.discountprice %>% OFF)
+                                        </span>
+                                </div>
+                                <% }else if(pro?.categoryOffer ) { %>
+                                    <div class="original-price" style="text-decoration: line-through; color: grey; font-size: 24px; font-weight: bold;">
+                                        <span class="currency-symbol">₹</span>
+                                        <span class="price"><%= pro.price %></span>
+                                    </div>
+                            
+                                    <div class="discounted-price" style="font-size: 24px; font-weight: bold; color: #148a12;">
+                                        <span class="currency-symbol">₹</span>
+                                        <span class="price">
+                                            <%= Math.round(pro.price - (pro.price * (pro.categoryOffer / 100))) %>
+
+                                        </span>
+                                        <span style="color: grey; font-size: 16px;">
+                                            (<%= pro.categoryOffer %>% OFF)
+                                        </span>
+                                    </div>
+                            <% }%>
                         </div>
+                        
+                        
                         <p><%= pro.description %></p>
+    
                         <ul class="tags">
                             <li><span>Category :</span> <%= pro.category.name %></li>
                         </ul>
@@ -121,12 +231,17 @@
                             <li><span>Stock :</span> <%= pro.stock %></li>
                         </ul>
     
-                        <!-- Display "Out of Stock" if stock is zero -->
                         <% if (pro.stock <= 0) { %>
                             <div class="out-of-stock" style="color: red; font-weight: bold;">Out of Stock</div>
                         <% } else { %>
-                            <button onclick="addToCart('<%- pro._id %>')" class="primary-btn pc-btn">Add to cart</button>
+                            <div class="button-container" style="display: flex; gap: 10px; align-items: center;">
+                                <button onclick="addToCart('<%- pro._id %>')" class="primary-btn pc-btn">Add to cart</button>
+                                <div class="wishlist-icon" style="cursor: pointer;" data-product-id="<%- pro._id %>">
+                                    <i class="fa fa-heart-o" style="color: #ff6f61; font-size: 24px;"></i>
+                                </div>
+                            </div>
                         <% } %>
+
                     </div>
                 </div>
             </div>
@@ -134,12 +249,7 @@
     </section>
     
     
-    
-    
-    
-
-    <!-- Related Product Section Begin -->
-    <section class="related-product spad">
+        <section class="related-product spad">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 text-center">
@@ -149,35 +259,56 @@
                 </div>
             </div>
             <div class="row">
-               
-                  
                 <% relatedProducts.forEach(relatedProduct => { %>
-                    <%if(relatedProduct.status==="Active"){ %>
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="single-product-item">
-                            <figure>
-                                <a href="/loadProductPage/<%= relatedProduct._id %>">
-                                    <img src="/uploads/<%= relatedProduct.image[0] %>" alt="<%= relatedProduct.name %>">
-                                </a>
-                                <!-- <% if (relatedProduct.status) { %>
-                                    <div class="p-status"><%= relatedProduct%></div>
-                                <% } %> -->
-                            </figure>
-                            <div class="product-text">
-                                <h6><%= relatedProduct.name %></h6>
-                                <p>&#8377;<%= relatedProduct.price.toFixed(2) %></p>
+                    <% if (relatedProduct.status === "Active") { %>
+                        <div class="col-lg-3 col-sm-6">
+                            <div class="single-product-item">
+                                <figure>
+                                    <a href="/loadProductPage/<%= relatedProduct._id %>">
+                                        <img src="/uploads/<%= relatedProduct.image[0] %>" alt="<%= relatedProduct.name %>">
+                                    </a>
+                                </figure>
+                                <div class="product-text">
+                                    <h6><%= relatedProduct.name %></h6>
+                                    <p>&#8377;<%= relatedProduct.price.toFixed(2) %></p>
+                                
+                                    <button 
+                                        onclick="addToCart('<%= relatedProduct._id %>')" 
+                                        class="primary-btn pc-btn"
+                                        style="
+                                            background-color: #e0e0e0; /* Light Gray Background */
+                                            border: none; 
+                                            color: #5c5c5c; /* Darker Gray Text */
+                                            padding: 10px 20px; 
+                                            text-align: center; 
+                                            text-decoration: none; 
+                                            display: inline-block; 
+                                            font-size: 16px; 
+                                            border-radius: 6px; 
+                                            transition: background-color 0.3s, transform 0.2s; 
+                                            cursor: pointer;
+                                        " 
+                                        onmouseover="this.style.backgroundColor='#bdbdbd'; this.style.color='#ffffff'; this.style.transform='scale(1.05)';" 
+                                        onmouseout="this.style.backgroundColor='#e0e0e0'; this.style.color='#5c5c5c'; this.style.transform='scale(1)';">
+                                        Add to Cart
+                                    </button>
+                                
+                                    <div 
+                                        class="wishlist-icon" 
+                                        style="cursor: pointer; display: inline-block; margin-left: 10px;" 
+                                        data-product-id="<%= relatedProduct._id %>">
+                                        <i class="fa fa-heart-o" style="color: #ff6f61; font-size: 24px;"></i>
+                                    </div>
+                                </div>
+                                
                             </div>
                         </div>
-                    </div>
-                    <%} %>
+                    <% } %>
                 <% }) %>
-             
             </div>
         </div>
     </section>
-    
-    <!-- Related Product Section End -->
-    
+        
 <script>
 		document.addEventListener('DOMContentLoaded', () => {
          const images = document.querySelectorAll('.zoomable-image');
@@ -217,12 +348,12 @@
 
             if (data.success) {
                 Swal.fire({
-                    position: "top-end",
-                    icon: "success",
-                    title: "Product added to cart successfully!",
-                    showConfirmButton: false,
-                    timer: 1500
-                });
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: 'The item has been successfully added to your cart.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
             } else {
                 Swal.fire({
                     position: "top-end",
@@ -243,6 +374,59 @@
             }).showToast();
         });
     }
+</script>
+
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+    const wishlistIcons = document.querySelectorAll('.wishlist-icon');
+    const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>'; 
+
+    wishlistIcons.forEach(icon => {
+        const productId = icon.getAttribute('data-product-id');
+        const heartIcon = icon.querySelector('i');
+
+        if (wishlistProducts.includes(productId)) {
+            heartIcon.classList.remove('fa-heart-o');  
+            heartIcon.classList.add('fa-heart');    
+            icon.classList.add('active');
+        }
+
+        icon.addEventListener('click', async function () {
+            const isActive = this.classList.contains('active');
+            this.classList.toggle('active');
+            
+            if (isActive) {
+                heartIcon.classList.remove('fa-heart');
+                heartIcon.classList.add('fa-heart-o');
+            } else {
+                heartIcon.classList.remove('fa-heart-o');
+                heartIcon.classList.add('fa-heart');
+            }
+
+            try {
+                const response = await fetch('/addToWishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    console.log('Wishlist updated');
+                } else {
+                    console.log('Failed to update wishlist');
+                }
+            } catch (error) {
+                console.error('Error updating wishlist:', error);
+            }
+        });
+    });
+});
+
+
 </script>
 
 <%-include('../layout/user/footer')%>	

@@ -109,7 +109,39 @@ const resendOtp = async (req, res) => {
     }
 };
 
+// forgotpassword mail
+
+const sendForgotPassMail = async (email, link) => {
+    if (!process.env.AUTH_EMAIL || !process.env.AUTH_PASS) {
+        throw new Error('Email authentication environment variables not set');
+    }
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.AUTH_EMAIL,
+            pass: process.env.AUTH_PASS
+        }
+    });
+
+    const mailOptions = {
+        from: process.env.AUTH_EMAIL,
+        to: email,
+        subject: 'Your Elixir Aura reset Password Link',
+        text: `Your Reset Password link is ${link}. Do not share this code with anyone.`
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        throw error;
+    }
+};
+
 module.exports = {
     sendOtp,
-    resendOtp
+    resendOtp,
+    sendForgotPassMail
 };

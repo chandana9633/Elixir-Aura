@@ -2,10 +2,15 @@ const User = require("../../models/user/userModel");
 const bcrypt = require('bcrypt');
 const Otp = require('../../models/user/otpModel');
 const Product = require('../../models/admin/productModel')
+const Wallet=require('../../models/user/walletModel')
+const Wishlist=require('../../models/user/wishlistModel')
+const Cart=require('../../models/user/cartModel')
 const { sendOtp } = require('./otpController');
 
 const renderHome = async (req, res) => {
     try {
+        const userId=req.session.user?.id
+        const user=req.session.user
         const products = await Product.find({ status: 'Active' });
         
         const latestProduct = [];
@@ -19,10 +24,14 @@ const renderHome = async (req, res) => {
             }
         }
 
-        console.log("Latest Products:", latestProduct);
-        console.log("All Products:", allProduct);
-
-        res.render("user/index", { user: req.session.user, latestProduct, allProduct });
+        let wishlistProducts = [];
+        if (userId) {
+            const wishlist = await Wishlist.findOne({ userId }).populate('products');
+            if (wishlist) {
+                wishlistProducts = wishlist.products.map(product => product._id.toString());
+            }
+        }
+        res.render("user/index", { user: req.session.user, latestProduct,wishlistProducts, allProduct });
     } catch (error) {
         console.error("Error rendering home page:", error);
         res.status(500).send("Server error");
@@ -51,13 +60,60 @@ const otpRender = async (req, res) => {
     });
 }
 
+
+async function giveReward(userId) {
+    try {
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+            console.error('Invalid userId:', userId);
+            return;
+        }
+
+        const rewardUser = await User.findById(userId);
+        if (!rewardUser) {
+            console.error('User not found for userId:', userId);
+            return;
+        }
+
+        const wallet = await Wallet.findOne({ userId: userId });
+
+        if (wallet) {
+            await Wallet.findByIdAndUpdate(wallet._id, {
+                $inc: { balance: 100 }, 
+                $push: {
+                    transaction: {
+                        amount: 100,
+                        type: 'Credit',
+                        description: 'Referral reward for new sign-up',
+                        orderId: null,
+                        date: new Date()
+                    }
+                }
+            });
+        } else {
+            await Wallet.create({
+                userId: userId,
+                balance: 100, 
+                transaction: [{
+                    amount: 100,
+                    type: 'Credit',
+                    description: 'Referral reward for new sign-up',
+                    orderId: null, 
+                    date: new Date()
+                }]
+            });
+        }
+
+        console.log(`Reward of 100 credited to userId: ${userId}`);
+    } catch (error) {
+        console.error('Error in giveReward function:', error);
+    }
+}
+
 const signUpUser = async (req, res) => {
-    
     const { name, email, password, conformPassword } = req.body;
-    console.log(name, password, email);
 
     if (!name || !email || !password || !conformPassword) {
-        // return res.status(400).json({ message: "Please fill in all fields." });
+        return res.status(400).json({ message: "Please fill in all fields." });
     }
 
     if (password !== conformPassword) {
@@ -70,20 +126,22 @@ const signUpUser = async (req, res) => {
             return res.status(400).json({ message: "User already exists." });
         }
 
-        // const newUser = new User({ name, email, password });
-        const hashPassword=await bcrypt.hash(password,12)
-        console.log(hashPassword)
+        const hashPassword = await bcrypt.hash(password, 12);
+
         req.session.notAuthenticatedUser = {
             name,
             email,
-            password,
-            hashPassword
+            password: hashPassword,
+        };
+
+        const referralUserId = req.session.refferalUser;
+        if (referralUserId) {
+            await giveReward(referralUserId);
         }
-        
 
         await sendOtp(email);
 
-        res.status(200).json({ message: "User registered successfully!" });
+        res.status(200).json({ message: "User registered successfully! OTP sent to your email." });
     } catch (error) {
         console.log("Error in signUpUser:", error);
         res.status(500).json({ message: "Server error. Please try again later." });
@@ -133,7 +191,6 @@ const verifyOTP = async (req, res) => {
                 password: req.session.notAuthenticatedUser.password
             }
             delete req.session.notAuthenticatedUser
-            console.log('New user created:', newUser);
 
             await Otp.deleteMany({ email }); 
             
@@ -164,8 +221,7 @@ const signIn = async (req, res) => {
     
     const { email, password } = req.body;
 
-    console.log('===========',password);
-    // console.log("lllllllllllll", email)
+
     
     if (!email || !password) {
         return res.status(400).json({ errorMessage: "please fill all fields", fieldErrors: { email: !email, password: !password } })

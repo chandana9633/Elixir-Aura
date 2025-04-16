@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #28292a;
+            --secondary-color: #4b4c4c;
+            --text-dark: #2c3e50;
+            --background-light: #f0f4f8;
+            --card-background: #ffffff;
+            --shadow-subtle: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .order-details-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: transparent;
+        }
+
+        .order-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .order-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .order-header h1 i {
+            color: var(--secondary-color);
+        }
+
+        .order-header p {
+            font-size: 1rem;
+            color: var(--text-dark);
+            opacity: 0.7;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--secondary-color);
+        }
+
+        .order-summary, .customer-info, .order-items {
+            margin-bottom: 30px;
+        }
+
+        .order-summary h2, .customer-info h2, .order-items h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: var(--shadow-subtle);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .summary-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-item h3 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .summary-item p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        .address-box {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-subtle);
+            line-height: 1.6;
+        }
+
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-item::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .product-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .product-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-item img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-right: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-details h3 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .product-details p {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            opacity: 0.8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-details-container {
+                padding: 15px;
+                margin: 20px 10px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .product-item img {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+
+        .cancel-button {
+            display: inline-block;
+            background-color: #e74c3c;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            margin-top: 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cancel-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .cancel-button:active {
+            transform: translateY(0);
+        }
+
+        .cancel-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .cancelPro-button{
+            background-color: #d64130;
+            color: white;
+            border-radius: 5px;
+            display: inline-block;
+            padding: 5px 25px;
+        }
+
+        .return-button {
+            background-color: #1a1a1bd7;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .return-button:hover {
+            background-color: #3f3f3f;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background-color: #18415c;
+            color: #fff; 
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 7px;
+            border: none;
+            border-radius: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px); 
+        }
+
+        .download-btn:active {
+            background-color: #1f618d; 
+            transform: translateY(0);
+        }
+
+        .download-btn:focus {
+            outline: 2px solid #2980b9; 
+            outline-offset: 2px;
+        }
+
+        .returnPro-button {
+            background-color: #166499; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            padding: 10px 20px; 
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); 
+        }
+
+        .returnPro-button:hover {
+            background-color: #2980b9; 
+            transform: scale(1.05); 
+        }
+
+        .returnPro-button:active {
+            background-color: #1c6a9e;
+            transform: scale(0.98); 
+        }
+
+        .returnPro-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+
+
+        .retry-payment-btn {
+    background-color:#368515; 
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.retry-payment-btn:hover {
+    background-color: #509621; 
+    transform: scale(1.05); 
+}
+
+.retry-payment-btn:active {
+    background-color: #6ec053;
+    transform: scale(0.98); 
+}
+
+    </style>
+</head>
+<body>
+    <div class="order-details-container">
+        <header class="order-header">
+            <h1><i class="fas fa-shopping-cart"></i>Failed Orders</h1>
+            <a href="/orders" class="back-link"><i class="fas fa-arrow-left"></i> Back to Orders</a>
+        </header>
+    
+        <% if (failedOrders.length > 0) { %>
+            <% failedOrders.forEach(order => { %>
+                <div class="order-details">
+                    <header class="order-header">
+                        <h2>Order ID: <%= order._id %></h2>
+                        <p><strong>Placed on:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                        <p><strong>Status:</strong> <%= order.paymentStatus %></p>
+                    </header>
+    
+                    <section class="customer-info">
+                        <h3>Shipping Address</h3>
+                        <% if (order.billingAddress && order.billingAddress.length > 0) { %>
+                            <% const address = order.billingAddress[0]; %>
+                            <div class="address-box">
+                                <p><strong><%= order.userName %></strong></p>
+                                <p><%= address.street %></p>
+                                <p><%= address.city %>, <%= address.state %> <%= address.pincode %></p>
+                                <p><%= address.country %></p>
+                            </div>
+                        <% } else { %>
+                            <p>No Address Available</p>
+                        <% } %>
+                    </section>
+    
+                    <section class="customer-info">
+                        <h3>Order Summary</h3>
+                        <div class="address-box">
+                            <p><strong>Total Items:</strong> <%= order.totalQuantity %></p>
+                            <p><strong>Total Cost:</strong> ₹<%= order.totalPrice %></p>
+                            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+                            <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+                        </div>
+                    </section>
+    
+                    <section class="order-items">
+                        <h3>Items in Order</h3>
+                        <div class="items-list">
+                            <% order.productItems.forEach(item => { %>
+                                <div class="product-item">
+                                    <img src="/uploads/<%=item.productId.image[0]%>" alt="<%= item.productName %>">
+                                    <div class="product-details">
+                                        <h4><%= item.productName %></h4>
+                                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                                        <p><strong>Price:</strong> ₹<%= item.offerPrice %></p>
+                                        <button class="retry-payment-btn" onclick="retryPayment('<%= order._id %>')">Retry Payment</button>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </section>
+                    <hr>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>No failed orders to display.</p>
+        <% } %>
+    </div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
+    <script>
+        function retryPayment(orderId) {
+            console.log('OrderId is hereee', orderId);
+    
+            fetch(`/retry-payment/${orderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            
+            .then(response => response.json())
+            .then(data => {
+                console.log('data', data);
+    
+                if (data.success) {
+                    const option = {
+                        key: data.key,
+                        amount:data.totalPrice, 
+                        currency: "INR",
+                        name: "Elixir Aura",
+                        description: "Order Payment",
+                        order_id: data.paymentOrderId,
+
+                        handler: function (response) {
+                            console.log('check hereeeeeee');
+                            if (response.razorpay_payment_id) {
+                                window.location.href = `/successOrder/${orderId}`;
+                            } else {
+                                console.log('Payment failed. Please try again.');
+                            }
+                        },
+                        prefill: {
+                            name: "John Doe",
+                            email: "john.doe@example.com",
+                            contact: "9000090000",
+                        },
+                        notes: {
+                        address: "Razorpay Corporate Office",
+                        },
+                        theme: {
+                        color: "#1818c4",
+                        },
+
+                    };
+    
+                    const razorpay = new Razorpay(option);
+                    razorpay.open();
+                } else {
+                    console.log('payment failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+    
+</body>
+</html>
