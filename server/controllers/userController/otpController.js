@@ -15,7 +15,7 @@ const sendOtpMail = async (email, otp) => {
     if (!process.env.AUTH_EMAIL || !process.env.AUTH_PASS) {
         throw new Error('Email authentication environment variables not set');
     }
-
+    
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -23,16 +23,20 @@ const sendOtpMail = async (email, otp) => {
             pass: process.env.AUTH_PASS
         }
     });
-
+    
+    
     const mailOptions = {
         from: process.env.AUTH_EMAIL,
         to: email,
         subject: 'Your OTP Code',
         text: `Your verification code is ${otp}. Do not share this code with anyone.`
     };
-
+    
     try {
+        console.log(otp,'otppppppppppppppppppppp');
         await transporter.sendMail(mailOptions);
+        console.log(otp,'otppppppppppppppppppppp');
+        console.log('sendotp email')
         console.log('Email sent successfully');
     } catch (error) {
         console.error('Error sending email:', error);
@@ -61,8 +65,9 @@ const sendOtp = async (email) => {
         });
 
         await newOtp.save();
+        console.log('otp new otp',newOtp)
         await sendOtpMail(email, otp);
-        
+       
         return { success: true, message: 'OTP has been sent to your email' };
     } catch (error) {
         console.error('Error generating or sending OTP:', error.message);

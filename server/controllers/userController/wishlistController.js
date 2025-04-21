@@ -25,12 +25,14 @@ const wishlistPage = async (req, res) => {
 const addToWishlist = async (req, res) => {
     try {
         const { productId } = req.body;
+        console.log(productId,'wishhhhhhhhh');
+        
         const userId = req.session?.user?.id;
         
         if (!userId) {
             return res.status(401).json({ success: false, message: 'User not logged in' });
         }
-
+        
         let wishlist = await Wishlist.findOne({ userId });
         if (!wishlist) {
             wishlist = new Wishlist({ userId, products: [] });

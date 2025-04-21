@@ -69,7 +69,7 @@
                         <a href="" class="flex-c-m trans-04 p-lr-25">
                             <%= user?.name %>
                         </a>
-                        <a href="/logout" class="flex-c-m trans-04 p-lr-25">
+                        <a href="#" class="flex-c-m trans-04 p-lr-25" id="logoutBtn">
                             Logout
                         </a>
                     <% } else { %>
@@ -112,6 +112,23 @@
             </div>
         </div>
     </div>
-    <!-- Header Info End -->
-    <!-- Header End -->
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById('logoutBtn').addEventListener('click',function(e){
+        e.preventDefault()
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "You will be logged out.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, logout',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/logout'; // Redirect after confirmation
+        }
+    });
+    })
+</script>

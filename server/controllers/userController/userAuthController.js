@@ -111,7 +111,8 @@ async function giveReward(userId) {
 
 const signUpUser = async (req, res) => {
     const { name, email, password, conformPassword } = req.body;
-
+    console.log(req.body,'register');
+    
     if (!name || !email || !password || !conformPassword) {
         return res.status(400).json({ message: "Please fill in all fields." });
     }
@@ -184,12 +185,15 @@ const verifyOTP = async (req, res) => {
                 password: req.session.notAuthenticatedUser.password
             });
 
+            console.log("new user", newUser);
+            
+
             await newUser.save();
-            req.session.user ={
-                name: req.session.notAuthenticatedUser.name,
-                email: req.session.notAuthenticatedUser.email,
-                password: req.session.notAuthenticatedUser.password
-            }
+            req.session.user = {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email
+            };
             delete req.session.notAuthenticatedUser
 
             await Otp.deleteMany({ email }); 
@@ -218,37 +222,48 @@ const verifyOTP = async (req, res) => {
 
 //--------signIn-----------------
 const signIn = async (req, res) => {
-    
     const { email, password } = req.body;
 
+    console.log("88888signIn8888", email, password);
 
-    
     if (!email || !password) {
-        return res.status(400).json({ errorMessage: "please fill all fields", fieldErrors: { email: !email, password: !password } })
+        return res.status(400).json({
+            errorMessage: "Please fill all fields",
+            fieldErrors: { email: !email, password: !password }
+        });
     }
 
     try {
-        const user = await User.findOne({status:'Active', email });
+        const user = await User.findOne({ email });
+
         if (!user) {
-            return res.status(401).json({ message: 'Your account is blocked.' });
+            return res.status(404).json({ message: 'User not found.' });
         }
-        const isMatch = user.password===password
+
+        if (user.status !== 'Active') {
+            return res.status(403).json({ message: 'Your account has been blocked. Please contact support.' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password.' });
         }
+
+        console.log("999passwords999", user.password, password);
         req.session.user = {
-            id:user._id,
+            id: user._id,
             name: user.name,
             email: user.email
-        }
-        // console.log( req.session.user );
-        
+        };
+
         res.status(200).json({ message: 'Sign in successful' });
     } catch (error) {
         console.error('Error during sign-in:', error);
         res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
+
 
 const logout = async (req, res) => {
     req.session.destroy((err) => {

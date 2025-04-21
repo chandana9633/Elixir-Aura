@@ -4,7 +4,8 @@ const   userProfile = async (req, res) => {
     try {
        const userId=req.session.user?.id
        
-       const user=await User.findById(userId)
+    //    const user=await User.findById(userId)
+     const user = await User.findById(userId).select('-password');
         console.log(user,'-----------------------------');
         
         res.render('user/userProfile',{user});
