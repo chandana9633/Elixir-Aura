@@ -37,7 +37,7 @@ passport.use(
             clientID: process.env.CLIENT_ID,
             clientSecret: process.env.CLIENT_SECRET,
             // callbackURL: 'http://localhost:5000/auth/google/callback' 
-            callbackURL: 'https://www.elixir-aura.shop' 
+            callbackURL: 'https://www.elixir-aura.shop/auth/google/callback' 
         },
         function (accessToken, refreshToken, profile, done) {
             console.log('Google Profile:', profile);
