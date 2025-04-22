@@ -82,7 +82,7 @@ const checkOutPage = async (req, res) => {
 
         const finalAmount = Math.max(Math.floor(cart.totalAmount - categoryDiscountAmount - couponDiscount), 0);
 
-        res.render('user/checkOutPage', {
+        res.render('user/checkoutPage', {
             user,
             cart,
             cartItems: cart.items,
