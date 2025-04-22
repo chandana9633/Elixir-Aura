@@ -1,10 +1,12 @@
 const User = require("../../models/user/userModel");
+const Wallet=require('../../models/user/walletModel')
+
 
 const succsessGoogleLogin = async (req, res) => {
     try {
-        if (!req.user) {
-            return res.redirect('/failure');
-        }
+        // if (!req.user) {
+        //     return res.redirect('/failure');
+        // }
 
         let existingUser = await User.findOne({ googleId: req.user.id });
 
@@ -18,12 +20,44 @@ const succsessGoogleLogin = async (req, res) => {
             });
 
             await existingUser.save();
-            console.log("New user created:", existingUser);
+            console.log("New user created:", existingUser._id);
+            req.session.user = {
+                id: existingUser._id,
+                name: existingUser.name,
+                email: existingUser.email
+            };
+            console.log('session after google login',req.session.user)
+
+
         } else {
+            req.session.user = {
+                id: existingUser._id,
+                name: existingUser.name,
+                email: existingUser.email
+            };
+            
+            // req.session.user.save()
+            console.log('session after google login',req.session.user?.id)
             console.log("User already exists:", existingUser);
         }
+        
 
-        req.session.user = existingUser;
+         const wallet = await Wallet.findOne({ userId:existingUser._id });
+                if (!wallet) {
+                    console.log('wallet page ')
+                    let walletDetails ={ 
+                        userId:existingUser._id, 
+                        total: 0, 
+                        returnAmount: 0, 
+                        canceledAmount: 0, 
+                        walletEntries: [] 
+                    }
+                   let newWallet = await Wallet.create(walletDetails)
+                    console.log('new wallet create',newWallet)
+                   
+                }
+        
+        // req.session.user = existingUser;
         req.session.save((err) => {
             if (err) {
                 console.error("Session save error:", err);

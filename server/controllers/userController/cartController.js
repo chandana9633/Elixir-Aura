@@ -7,6 +7,7 @@ const CategoryOffer = require('../../models/admin/categoryOfferModel')
 const cartRender = async (req, res) => {
     try {
         const userId = req.session?.user?.id;
+        console.log('user id',userId)
         if (!userId) {
             return res.status(404).json({ msg: "Please Login" });
         }

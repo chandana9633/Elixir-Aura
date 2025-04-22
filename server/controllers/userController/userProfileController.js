@@ -3,10 +3,11 @@ const User = require('../../models/user/userModel');
 const   userProfile = async (req, res) => {
     try {
        const userId=req.session.user?.id
+       console.log('user id',userId)
        
     //    const user=await User.findById(userId)
      const user = await User.findById(userId).select('-password');
-        console.log(user,'-----------------------------');
+        console.log(user,'no user-----------------------------');
         
         res.render('user/userProfile',{user});
     } catch (error) {
