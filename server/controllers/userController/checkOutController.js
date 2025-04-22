@@ -6,6 +6,7 @@ const Wallet=require('../../models/user/walletModel')
 const Coupon=require('../../models/admin/coponModel')
 const CategoryOffer=require('../../models/admin/categoryOfferModel')
 
+  
 
 const checkOutPage = async (req, res) => {
     try {
@@ -26,10 +27,20 @@ const checkOutPage = async (req, res) => {
             return res.status(404).json({ error: 'Cart is empty' });
         }
 
-        const wallet = await Wallet.findOne({ userId });
-        console.log(wallet,'waaaaaaaaaalet');
+        // const wallet = await Wallet.findOne({ userId });
+        // console.log(wallet,'waaaaaaaaaalet');
         
-        if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+        // if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+
+        let wallet = await Wallet.findOne({ userId });
+                // console.log(wallet,'waaaaaaaaaalet');
+
+        if (!wallet) {
+        wallet = new Wallet({ userId, balance: 0 });
+        await wallet.save();
+        }
+
 
         const currentDate = new Date();
 
@@ -87,6 +98,7 @@ const checkOutPage = async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 };
+
 
 
 

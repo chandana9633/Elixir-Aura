@@ -124,13 +124,40 @@ const loadShopPage = async (req, res) => {
 };
 
 
+// const SearchingProduct = async (req, res) => {
+//     try {
+//         const { query } = req.query;
+
+//         const normalizedQuery = query.trim().replace(/\s+/g, ' ');
+
+//         const searchOptions = {
+//             status: 'Active',
+//             $or: [
+//                 { name: { $regex: normalizedQuery, $options: 'i' } },
+//                 { productName: { $regex: normalizedQuery.split(' ').join('.*'), $options: 'i' } }
+//             ]
+//         };
+
+//         const products = await Product.find(searchOptions).populate('category');
+
+//         res.json({ success: true, count: products.length, products });
+//     } catch (error) {
+//         console.error('Error in searching products:', error);
+//         res.status(500).json({ success: false, message: 'Error searching products', error: error.message });
+//     }
+// };
+
+
+
 const SearchingProduct = async (req, res) => {
     try {
-        const { query } = req.query;
+        const { query = '', category = '', page = 1 } = req.query;
+        const perPage = 6; 
+        const skip = (page - 1) * perPage;
 
         const normalizedQuery = query.trim().replace(/\s+/g, ' ');
 
-        const searchOptions = {
+        const filter = {
             status: 'Active',
             $or: [
                 { name: { $regex: normalizedQuery, $options: 'i' } },
@@ -138,9 +165,19 @@ const SearchingProduct = async (req, res) => {
             ]
         };
 
-        const products = await Product.find(searchOptions).populate('category');
+        if (category) {
+            filter.category = category;
+        }
 
-        res.json({ success: true, count: products.length, products });
+        const total = await Product.countDocuments(filter);
+        const totalPages = Math.ceil(total / perPage);
+
+        const products = await Product.find(filter)
+            .populate('category')
+            .skip(skip)
+            .limit(perPage);
+
+        res.json({ success: true, products, totalPages });
     } catch (error) {
         console.error('Error in searching products:', error);
         res.status(500).json({ success: false, message: 'Error searching products', error: error.message });
