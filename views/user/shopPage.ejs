@@ -634,58 +634,109 @@ body {
         });
 
         // Add to Wishlist functionality
-        document.querySelectorAll('.wishlist-btn').forEach(button => {
-            button.addEventListener('click', async (event) => {
-                const productId = event.target.getAttribute('data-product-id');
+        // document.querySelectorAll('.wishlist-btn').forEach(button => {
+        //     button.addEventListener('click', async (event) => {
+        //         const productId = event.target.getAttribute('data-product-id');
+        //         try {
+        //             const response = await fetch('/addToWish', {
+        //                 method: 'POST',
+        //                 headers: {
+        //                     'Content-Type': 'application/json'
+        //                 },
+        //                 body: JSON.stringify({ productId })
+        //             });
+
+        //             const result = await response.json();
+        //             if (response.ok) {
+        //                 const iconElement = button.querySelector('i');
+        //                 if (iconElement.classList.contains('fa-heart')) {
+        //                     iconElement.classList.remove('fa-heart');
+        //                     iconElement.classList.add('fa-heart-o');
+        //                 } else {
+        //                     iconElement.classList.remove('fa-heart-o');
+        //                     iconElement.classList.add('fa-heart');
+        //                 }
+        //                 Swal.fire({
+        //                     icon: 'success',
+        //                     title: 'Wishlist Updated!',
+        //                     text: result.message || 'Your wishlist was updated successfully.',
+        //                     timer: 1500,
+        //                     showConfirmButton: false
+        //                 });
+        //             } else {
+        //                 Swal.fire({
+        //                     icon: 'error',
+        //                     title: 'Failed to Update Wishlist!',
+        //                     text: result.message || 'Please Login to manage your wishlist.',
+        //                     timer: 1500,
+        //                     showConfirmButton: false
+        //                 });
+        //             }
+        //         } catch (error) {
+        //             console.error('Error updating wishlist:', error);
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'Error!',
+        //                 text: 'An error occurred. Please try again.',
+        //                 timer: 1500,
+        //                 showConfirmButton: false
+        //             });
+        //         }
+        //     });
+        // });
+    });
+  </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const wishlistIcons = document.querySelectorAll('.wishlist-btn');
+        const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>' // parsed directly as JS array
+    
+        wishlistIcons.forEach(icon => {
+            const productId = icon.getAttribute('data-product-id');
+            const heartIcon = icon.querySelector('i');
+    
+            // Initialize heart state based on wishlist
+            if (wishlistProducts.includes(productId)) {
+                heartIcon.classList.remove('fa-heart-o');
+                heartIcon.classList.add('fa-heart');
+                icon.classList.add('active');
+            }
+    
+            icon.addEventListener('click', async function () {
+                const isActive = this.classList.contains('active');
+                this.classList.toggle('active');
+    
+                if (isActive) {
+                    heartIcon.classList.remove('fa-heart');
+                    heartIcon.classList.add('fa-heart-o');
+                } else {
+                    heartIcon.classList.remove('fa-heart-o');
+                    heartIcon.classList.add('fa-heart');
+                }
+    
                 try {
                     const response = await fetch('/addToWish', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ productId })
                     });
-
+    
                     const result = await response.json();
-                    if (response.ok) {
-                        const iconElement = button.querySelector('i');
-                        if (iconElement.classList.contains('fa-heart')) {
-                            iconElement.classList.remove('fa-heart');
-                            iconElement.classList.add('fa-heart-o');
-                        } else {
-                            iconElement.classList.remove('fa-heart-o');
-                            iconElement.classList.add('fa-heart');
-                        }
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Wishlist Updated!',
-                            text: result.message || 'Your wishlist was updated successfully.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Failed to Update Wishlist!',
-                            text: result.message || 'Please Login to manage your wishlist.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
+    
+                    if (!response.ok || !result.success) {
+                        console.log('Failed to update wishlist');
                     }
                 } catch (error) {
                     console.error('Error updating wishlist:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'An error occurred. Please try again.',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
                 }
             });
         });
     });
-  </script>
+    </script>
+    
 
   <script>
     document.getElementById('clear-all').addEventListener('click', function() {

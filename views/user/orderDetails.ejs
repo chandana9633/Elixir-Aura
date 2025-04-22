@@ -347,6 +347,11 @@
     box-shadow: none;
 }
 
+.cancel-msg {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-top: 10px;
+}
 
 
 
@@ -401,19 +406,27 @@
                             <p><strong>Price:</strong> ₹<%= item.total.toFixed(2) %></p>
                             
                             <% if (order.status === 'Pending' && order.productItems.length > 1) { %>
-                                <form action="/orders/cancel-item/<%= order._id %>/<%= item.productId._id %>" method="POST">
-                                    <input type="hidden" name="newStatus" value="Cancelled">
-                                    <button class="cancelPro-button" data-perticularOrder-id="<%= order._id %>" data-perticulrPro-id="<%= item.productId._id %>">Cancel</button>
-                                </form>
+                                <% if (item.status === 'Cancelled') { %>
+                                    <p class="cancel-msg">This item has been cancelled.</p>
+                                <% } else { %>
+                                    <form action="/orders/cancel-item/<%= order._id %>/<%= item.productId._id %>" method="POST">
+                                        <input type="hidden" name="newStatus" value="Cancelled">
+                                        <button class="cancelPro-button" data-perticularOrder-id="<%= order._id %>" data-perticulrPro-id="<%= item.productId._id %>">Cancel</button>
+                                    </form>
+                                <% } %>
                             <% } %>
+                            
         
-                            <% if (order.status === 'Delivered' && !item.returned && order.productItems.length>1) { %>
-                                <a href="/productReturn/<%= order._id %>/<%= item.productId._id %>">
-                                    <button type="button" class="return-button">Return Product</button>
-                                </a>
-                            <% } else if (item.returned) { %>
-                                <p style="color: #06678d; font-weight: bold;">This product has already been returned.</p>
+                            <% if (order.status === 'Delivered' && order.productItems.length > 1) { %>
+                                <% if (item.status === 'Returned') { %>
+                                    <p class="return-msg" style="color: #06678d; font-weight: bold;">This product has already been returned.</p>
+                                <% } else { %>
+                                    <a href="/productReturn/<%= order._id %>/<%= item.productId._id %>">
+                                        <button type="button" class="return-button">Return Product</button>
+                                    </a>
+                                <% } %>
                             <% } %>
+                            
                             
                         </div>
                     </div>
@@ -425,9 +438,13 @@
         <section class="cancel-section">
             <!-- Cancel Entire Order -->
             <% if (order.status === 'Pending' ) { %>
-                <form action="/orders/cancel/<%= order._id %>" method="POST">
-                    <button type="submit" class="cancel-button">Cancel Order</button>
-                </form>
+                <form>
+                    <button type="button" 
+                            class="cancel-button" 
+                            data-order-id="<%= order._id %>">
+                      Cancel Order
+                    </button>
+                  </form>
                 
             <% } else if (order.status !== 'Returned') { %>
                 <p style="color: #239212; font-weight: bold; font-size: 20px;">
@@ -454,55 +471,55 @@
 
     <script>
         document.querySelectorAll('.cancel-button').forEach(button => {
-            button.addEventListener('click', async function (e) {
-                e.preventDefault();
-        
-                const orderId = this.getAttribute('data-order-id');
-        
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'Do you really want to cancel the entire order?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, cancel it!'
-                }).then(async (result) => {
-                    if (result.isConfirmed) {
-                        try {
-                            const response = await fetch(`/orders/cancel/${orderId}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({}) // or required payload
-                            });
-        
-                            const result = await response.json();
-        
-                            if (response.ok && result.success) {
-                                Swal.fire(
-                                    'Cancelled!',
-                                    'Your order has been cancelled.',
-                                    'success'
-                                ).then(() => {
-                                    window.location.href = '/cancelPage?success=Order%20canceled%20successfully';
-                                });
-                            } else {
-                                Swal.fire(
-                                    'Error!',
-                                    result.message || 'Could not cancel the order.',
-                                    'error'
-                                );
-                            }
-                        } catch (error) {
-                            console.error('Cancel Error:', error);
-                            Swal.fire('Oops!', 'Something went wrong.', 'error');
-                        }
-                    }
-                });
+  button.addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const orderId = this.getAttribute('data-order-id');
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you really want to cancel the entire order?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, cancel it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await fetch(`/orders/cancel/${orderId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            Swal.fire(
+              'Cancelled!',
+              'Your order has been cancelled.',
+              'success'
+            ).then(() => {
+              window.location.href = '/cancelPage?success=Order%20canceled%20successfully';
             });
-        });
+          } else {
+            Swal.fire(
+              'Error!',
+              result.message || 'Could not cancel the order.',
+              'error'
+            );
+          }
+        } catch (error) {
+          console.error('Cancel Error:', error);
+          Swal.fire('Oops!', 'Something went wrong.', 'error');
+        }
+      }
+    });
+  });
+});
         </script>
         
 

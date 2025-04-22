@@ -61,7 +61,7 @@ router.put('/updateCategoryOffer/:offerId', categoryOfferController.updateCatego
 router.delete('/deleteCategoryOffer/:offerId', categoryOfferController.removeCategoryOffer );
 
 
-router.post('/dashboardChart',salesReportController.salesReport)
+// router.post('/dashboardChart',salesReportController.salesReport)
 router.get('/dashboard-data',dashboardController.getDashboardData)
 
 router.post('/generateReport', adminAuthentication.generateReport);

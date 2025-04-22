@@ -40,7 +40,7 @@ app.use(session({
 app.set("view engine","ejs")
 console.log("osdhoihlkdsghpidshg");
 
-// require('./config/passport-setup');
+require('./config/passport-setup');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -53,7 +53,7 @@ app.use((req, res, next) => {
     next();
   });
 
-const PORT=process.env.PORT || 4000
+const PORT=process.env.PORT || 5000
 
 //MongoDB connection
 

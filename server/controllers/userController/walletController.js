@@ -14,13 +14,23 @@ const walletPage = async (req, res) => {
 
         const wallet = await Wallet.findOne({ userId });
         if (!wallet) {
-            return res.render('user/walletPage', { 
+            console.log('wallet page ')
+            let walletDetails ={ 
+                userId, 
+                total: 0, 
+                returnAmount: 0, 
+                canceledAmount: 0, 
+                walletEntries: [] 
+            }
+           let newWallet = await Wallet.create(walletDetails)
+            console.log('new wallet create',newWallet)
+            return res.render('user/walletPage',{ 
                 user, 
                 total: 0, 
                 returnAmount: 0, 
                 canceledAmount: 0, 
                 walletEntries: [] 
-            });
+            } );
         }
 
         let total = wallet.balance;

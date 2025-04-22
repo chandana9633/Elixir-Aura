@@ -102,14 +102,14 @@
         </div>
     </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function handleAction(orderId,action) {        
+    function handleAction(orderId, action) {
         const data = {
             orderId: orderId,
-            returnReason:action==='accepted'?'Returned':'Rejected'
+            returnReason: action === 'accepted' ? 'Returned' : 'Rejected'
         };
 
-    
         fetch('/admin/returnRequestProcessing', {
             method: 'POST',
             headers: {
@@ -125,12 +125,23 @@
             }
         })
         .then(result => {
-            alert(`Action '${action}' for Order ID ${orderId} was successful.`);
-            console.log(result);
+            Swal.fire({
+                title: `Request ${action === 'accepted' ? 'Accepted' : 'Rejected'}!`,
+                text: `Order ID ${orderId} has been ${action}.`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/admin/orders'; // redirect after user confirms
+            });
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Something went wrong. Please try again.');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Something went wrong. Please try again.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         });
     }
 </script>

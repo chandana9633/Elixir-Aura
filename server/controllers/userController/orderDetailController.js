@@ -5,6 +5,8 @@ const Razorpay = require('razorpay');
 const uuid = require('uuid');
 const Cart = require('../../models/user/cartModel');
 const Wallet=require('../../models/user/walletModel')
+const mongoose = require('mongoose');
+
 require('dotenv').config(); 
 
 async function initiatePaymentRetry(order) {
@@ -108,64 +110,65 @@ const cancelShowPage = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
     try {
-        const orderId = req.params.id;
-
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(400).send("Order not found.");
+      const orderId = req.params.id;
+  
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+        return res.status(400).json({ success: false, message: "Invalid order ID." });
+      }
+  
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(400).json({ success: false, message: "Order not found." });
+      }
+  
+      if (order.status === 'Delivered' || order.status === 'Cancelled') {
+        return res.status(400).json({ success: false, message: "Order cannot be canceled" });
+      }
+  
+      for (let item of order.productItems) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          product.stock += item.quantity;
+          await product.save();
         }
-
-        if (order.status === 'Delivered' || order.status === 'Cancelled') {
-            return res.status(400).send("Order cannot be canceled");
-        }
-
-        for (let item of order.productItems) {
-            const product = await Product.findById(item.productId);
-            if (product) {
-                product.stock += item.quantity;
-                await product.save();
-            }
-        }
-
-        if (order.paymentMethod !== 'COD') {
-            const refundAmount = order.totalPrice;
-
-            let wallet = await Wallet.findOne({ userId: order.userId });
-            if (!wallet) {
-                wallet = new Wallet({
-                    userId: order.userId,
-                    balance: refundAmount,
-                    transaction: [{
-                        amount: refundAmount,
-                        type: 'Credit',
-                        description: `Refund for canceled order ${orderId}`,
-                        orderId: orderId
-                    }]
-                });
-            } else {
-                wallet.balance += refundAmount;
-                wallet.transaction.push({
-                    amount: refundAmount,
-                    type: 'Credit',
-                    description: `Refund for canceled order ${orderId}`,
-                    orderId: orderId
-                });
-            }
-
-            await wallet.save();
+      }
+  
+      if (order.paymentMethod !== 'COD') {
+        const refundAmount = order.totalPrice;
+        let wallet = await Wallet.findOne({ userId: order.userId });
+  
+        const transaction = {
+          amount: refundAmount,
+          type: 'Credit',
+          description: `Refund for canceled order ${orderId}`,
+          orderId: orderId
+        };
+  
+        if (!wallet) {
+          wallet = new Wallet({
+            userId: order.userId,
+            balance: refundAmount,
+            transaction: [transaction]
+          });
         } else {
-            console.log(`COD order ${orderId} canceled. Refund will be handled manually.`);
+          wallet.balance += refundAmount;
+          wallet.transaction.push(transaction);
         }
-
-        order.status = 'Cancelled';
-        await order.save();
-
-        return res.redirect(`/cancelPage?success=Order%20canceled%20successfully`);
+  
+        await wallet.save();
+      } else {
+        console.log(`COD order ${orderId} canceled. Refund will be handled manually.`);
+      }
+  
+      order.status = 'Cancelled';
+      await order.save();
+  
+      return res.json({ success: true, message: "Order canceled successfully" });
     } catch (error) {
-        console.error(error);
-        return res.redirect(`/cancelPage?error=Server%20error%20occurred`);
+      console.error(error);
+      return res.status(500).json({ success: false, message: "Server error occurred" });
     }
-};
+  };
 
 
 const cancelPerticularProduct = async (req, res) => {
@@ -419,9 +422,7 @@ const orderReturnPost = async (req, res) => {
 
 
             return res.status(200).json({ message: 'Return request processed successfully' }); 
-        
-
-       
+               
     } catch (error) {
         console.error('Error processing return request:', error); 
         res.status(500).json({ error: 'Internal Server Error' }); 
@@ -479,6 +480,7 @@ const productReturnPost = async (req, res) => {
 
         user.wallet = (user.wallet || 0) + refundAmount;
 
+        product.status = 'Returned'
         product.returned = true;
         product.returnReason = reason;
 
@@ -494,7 +496,7 @@ const productReturnPost = async (req, res) => {
         console.error('Error processing product return:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+};  
 
 
 const faildOrderPage = async (req, res) => {

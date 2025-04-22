@@ -10,14 +10,16 @@ const CategoryOffer=require('../../models/admin/categoryOfferModel')
 const checkOutPage = async (req, res) => {
     try {
         const userId = req.session.user?.id;
-
+        console.log(userId,'hy userrrrrrrrrrrrrr');
+        
         if (!userId) {
             return res.status(400).json({ error: 'User not authenticated' });
         }
-
+        
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        
         const address = user.address || {};
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         if (!cart || cart.items.length === 0) {
@@ -25,6 +27,8 @@ const checkOutPage = async (req, res) => {
         }
 
         const wallet = await Wallet.findOne({ userId });
+        console.log(wallet,'waaaaaaaaaalet');
+        
         if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
 
         const currentDate = new Date();

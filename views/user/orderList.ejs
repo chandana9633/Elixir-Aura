@@ -225,6 +225,36 @@
             font-weight: bold;
         }
 
+
+        .status-label {
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    text-transform: capitalize;
+}
+
+.status-label.cancelled {
+    background-color: #fdecea;
+    color: #e74c3c;
+}
+
+.status-label.delivered {
+    background-color: #eafaf1;
+    color: #27ae60;
+}
+
+.status-label.pending {
+    background-color: #fef5e7;
+    color: #f39c12;
+}
+
+.status-label.processing {
+    background-color: #e8f4fd;
+    color: #3498db;
+}
+
+
     </style>
 </head>
 <body>
@@ -251,7 +281,10 @@
                         <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
                         <p><strong>Items:</strong> <%= order.totalQuantity %></p>
                         <p><strong>Total:</strong> ₹<%= order.totalPrice %></p>
-                        <a href="/orderDetails/<%= order._id %>" style="text-decoration: none;">
+                        <p><strong>Order Status:</strong> 
+                            <span class="status-label <%= order.status.toLowerCase() %>"><%= order.status %></span>
+                         </p>
+                         <a href="/orderDetails/<%= order._id %>" style="text-decoration: none;">
                             <button class="btn">
                                 <i class="fas fa-eye"></i> View Details
                             </button>

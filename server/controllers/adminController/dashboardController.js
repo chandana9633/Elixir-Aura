@@ -26,7 +26,7 @@ const getDashboardData = async (req, res) => {
               },
               {
                   $addFields: {
-                      productId: { $toObjectId: '$_id' } // make sure _id is ObjectId
+                      productId: { $toObjectId: '$_id' } 
                   }
               },
               {
@@ -42,7 +42,7 @@ const getDashboardData = async (req, res) => {
                   $project: {
                       _id: 1,
                       totalSales: 1,
-                      productName: '$productDetails.productName'
+                      productName: '$productDetails.name'
                   }
               },
               { $sort: { totalSales: -1 } }
@@ -117,6 +117,7 @@ const getDashboardData = async (req, res) => {
       }
 
       const result = await Order.aggregate(pipeline);
+      console.log('dashboard data',result)
       res.json(result);
 
   } catch (error) {

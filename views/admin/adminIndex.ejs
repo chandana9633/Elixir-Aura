@@ -273,7 +273,7 @@
                 return response.blob().then(blob => ({ blob, fileName }));
             })
             .then(({ blob, fileName }) => {
-                console.log('response from report2',response)
+                console.log('response from report2')
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -297,7 +297,8 @@
                 const data = await response.json();
 
                 console.log('data is item',data)
-                const labels = data.map(item => item.productName || item.date || 'Unknown');
+                // const labels = data.map(item => item.productName || item.date || 'Unknown');
+                const labels = data.map(item => item.productName.slice(0,7) || item.date || 'Unknown');
                 const sales = data.map(item => item.totalSales || 0);
 
                 const ctx = document.getElementById('myChart').getContext('2d');
