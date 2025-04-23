@@ -175,161 +175,203 @@ const adminLogout=async (req,res) => {
     req.session.destroy()
     res.redirect('/admin/adminLoginPage')
 }
-
 const generateReport = async (req, res) => {
-    console.log('inside generate report')
     try {
-        const { reportType, startDate, endDate, downloadFormat } = req.body;
-
-        console.log('req.body',req.body)
-        let dateFilter = {};
-        const now = new Date();
-
-        switch (reportType) {
-            case 'daily':
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(now.setHours(0, 0, 0, 0)),
-                        $lte: new Date(now.setHours(23, 59, 59, 999)),
-                    },
-                };
-                break;
-            case 'weekly':
-                const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(weekStart.setHours(0, 0, 0, 0)),
-                        $lte: new Date(now.setHours(23, 59, 59, 999)),
-                    },
-                };
-                break;
-            case 'yearly':
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(now.getFullYear(), 0, 1),
-                        $lte: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999),
-                    },
-                };
-                break;
-            case 'custom':
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate),
-                    },
-                };
-                break;
-            default:
-                return res.status(400).json({ error: 'Invalid report type' });
-        }
-
-        console.log('date filter',dateFilter)
-        
-        const orders = await Order.find(dateFilter)
-            .populate('userId', 'name email')
-            .populate('productItems.productId', 'productName');
-
-            console.log('oreders after report',orders)
-        if (!orders.length) {
-            return res.status(404).json({ error: 'No orders found for the selected period' });
-        }
-
-        const totalSales = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-        const totalOrders = orders.length;
-        const totalItemsSold = orders.reduce((sum, order) => sum + (order.totalQuantity || 0), 0);
-
-        if (downloadFormat === 'pdf') {
-            const doc = new PDFDocument();
-            let buffers = [];
-            doc.on('data', buffers.push.bind(buffers));
-            doc.on('end', () => {
-                const pdfData = Buffer.concat(buffers);
-                res.setHeader('Content-Disposition', `attachment; filename="sales_report_${reportType}_${Date.now()}.pdf"`);
-                res.setHeader('Content-Type', 'application/pdf');
-                res.send(pdfData);
-            });
-
-            // PDF Content
-            doc.fontSize(20).text(`Sales Report - ${reportType}`, { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(12).text(`Period: ${reportType === 'custom' ? `${startDate} to ${endDate}` : reportType}`);
-            doc.text(`Total Orders: ${totalOrders}`);
-            doc.text(`Total Items Sold: ${totalItemsSold}`);
-            doc.text(`Total Sales: ₹${totalSales.toFixed(2)}`);
-            doc.moveDown();
-
-            // Order Details Table
-            doc.text('Order Details:', { underline: true });
-            orders.forEach((order, index) => {
-                doc.moveDown(0.5);
-                doc.text(`Order #${index + 1}`);
-                doc.text(`Order ID: ${order._id}`);
-                doc.text(`User: ${order.userId.name} (${order.userId.email})`);
-                doc.text(`Total: ₹${order.totalPrice || 0}`);
-                doc.text(`Status: ${order.status}`);
-                doc.text(`Payment: ${order.paymentMethod} (${order.paymentStatus})`);
-                doc.text('Items:');
-                order.productItems.forEach(item => {
-                    doc.text(`- ${item.productName} (Qty: ${item.quantity}, Price: ₹${item.total})`);
-                });
-            });
-
-            doc.end();
-        } else if (downloadFormat === 'excel') {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sales Report');
-
-            // Add headers
-            worksheet.columns = [
-                { header: 'Order ID', key: 'orderId', width: 25 },
-                { header: 'User Name', key: 'userName', width: 20 },
-                { header: 'Email', key: 'email', width: 25 },
-                { header: 'Date', key: 'date', width: 15 },
-                { header: 'Total', key: 'total', width: 15 },
-                { header: 'Status', key: 'status', width: 15 },
-                { header: 'Payment Method', key: 'paymentMethod', width: 15 },
-                { header: 'Items', key: 'items', width: 40 },
-            ];
-
-            // Add summary
-            worksheet.addRow(['Summary']);
-            worksheet.addRow(['Total Orders', totalOrders]);
-            worksheet.addRow(['Total Items Sold', totalItemsSold]);
-            worksheet.addRow(['Total Sales', `₹${totalSales.toFixed(2)}`]);
-            worksheet.addRow([]);
-
-            // Add order data
-            orders.forEach(order => {
-                const items = order.productItems.map(item => `${item.productName} (Qty: ${item.quantity})`).join(', ');
-                worksheet.addRow({
-                    orderId: order._id.toString(),
-                    userName: order.userId.name,
-                    email: order.userId.email,
-                    date: order.createdAt.toISOString().split('T')[0],
-                    total: `₹${order.totalPrice || 0}`,
-                    status: order.status,
-                    paymentMethod: order.paymentMethod,
-                    items: items,
-                });
-            });
-
-            // Generate Excel file
-            res.setHeader(
-                'Content-Disposition',
-                `attachment; filename="sales_report_${reportType}_${Date.now()}.xlsx"`
-            );
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            await workbook.xlsx.write(res);
-            res.end();
-        } else {
-            return res.status(400).json({ error: 'Invalid download format' });
-        }
+      const { reportType, startDate, endDate, downloadFormat } = req.body;
+  
+      let dateFilter = {};
+      const now = new Date();
+  
+      switch (reportType) {
+        case 'daily':
+          dateFilter = {
+            createdAt: {
+              $gte: new Date(now.setHours(0, 0, 0, 0)),
+              $lte: new Date(now.setHours(23, 59, 59, 999)),
+            },
+          };
+          break;
+        case 'weekly':
+          const startOfWeek = new Date();
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          startOfWeek.setHours(0, 0, 0, 0);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          endOfWeek.setHours(23, 59, 59, 999);
+          dateFilter = {
+            createdAt: {
+              $gte: startOfWeek,
+              $lte: endOfWeek,
+            },
+          };
+          break;
+        case 'yearly':
+          dateFilter = {
+            createdAt: {
+              $gte: new Date(now.getFullYear(), 0, 1),
+              $lte: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999),
+            },
+          };
+          break;
+        case 'custom':
+          if (!startDate || !endDate) {
+            return res.status(400).json({ error: 'Start and end dates are required for custom range' });
+          }
+          dateFilter = {
+            createdAt: {
+              $gte: new Date(startDate),
+              $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+            },
+          };
+          break;
+        default:
+          return res.status(400).json({ error: 'Invalid report type' });
+      }
+  
+      // Aggregation pipeline for report data
+      const pipeline = [
+        { $match: dateFilter },
+        { $unwind: '$productItems' },
+        {
+          $group: {
+            _id: {
+              reportType: reportType === 'daily' ? '$productItems.productId' : reportType === 'weekly' ? { $dayOfWeek: '$createdAt' } : reportType === 'yearly' ? { $month: '$createdAt' } : '$productItems.productId',
+              productId: '$productItems.productId',
+            },
+            totalSales: { $sum: '$productItems.quantity' },
+            totalPrice: { $sum: '$productItems.total' },
+          },
+        },
+        {
+          $addFields: {
+            productId: { $toObjectId: '$_id.productId' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'productId',
+            foreignField: '_id',
+            as: 'productDetails',
+          },
+        },
+        { $unwind: { path: '$productDetails', preserveNullAndEmptyArrays: true } },
+        {
+          $project: {
+            _id: 0,
+            productName: '$productDetails.name',
+            totalSales: 1,
+            totalPrice: 1,
+            date: reportType === 'weekly' ? {
+              $let: {
+                vars: {
+                  days: ['', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                },
+                in: { $arrayElemAt: ['$$days', '$_id.reportType'] },
+              },
+            } : reportType === 'yearly' ? {
+              $let: {
+                vars: {
+                  months: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                },
+                in: { $arrayElemAt: ['$$months', '$_id.reportType'] },
+              },
+            } : null,
+          },
+        },
+        { $sort: reportType === 'daily' || reportType === 'custom' ? { totalSales: -1 } : { date: 1 } },
+      ];
+  
+      const reportData = await Order.aggregate(pipeline);
+  
+      if (!reportData.length) {
+        return res.status(404).json({ error: 'No data found for the selected period' });
+      }
+  
+      // Calculate summary metrics
+      const totalOrders = await Order.countDocuments(dateFilter);
+      const totalItemsSold = reportData.reduce((sum, item) => sum + item.totalSales, 0);
+      const totalSales = reportData.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+  
+      if (downloadFormat === 'pdf') {
+        const doc = new PDFDocument();
+        let buffers = [];
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => {
+          const pdfData = Buffer.concat(buffers);
+          res.setHeader('Content-Disposition', `attachment; filename="sales_report_${reportType}_${Date.now()}.pdf"`);
+          res.setHeader('Content-Type', 'application/pdf');
+          res.send(pdfData);
+        });
+  
+        // PDF Content
+        doc.fontSize(20).text(`Sales Report - ${reportType}`, { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Period: ${reportType === 'custom' ? `${startDate} to ${endDate}` : reportType}`);
+        doc.text(`Total Orders: ${totalOrders}`);
+        doc.text(`Total Items Sold: ${totalItemsSold}`);
+        doc.text(`Total Sales: ₹${totalSales.toFixed(2)}`);
+        doc.moveDown();
+  
+        // Report Details
+        doc.text('Report Details:', { underline: true });
+        reportData.forEach((item, index) => {
+          doc.moveDown(0.5);
+          doc.text(`Item #${index + 1}`);
+          doc.text(`Product: ${item.productName || 'Unknown'}`);
+          if (item.date) {
+            doc.text(`Period: ${item.date}`);
+          }
+          doc.text(`Quantity Sold: ${item.totalSales}`);
+          doc.text(`Total Price: ₹${item.totalPrice.toFixed(2)}`);
+        });
+  
+        doc.end();
+      } else if (downloadFormat === 'excel') {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Sales Report');
+  
+        // Add headers
+        worksheet.columns = [
+          { header: 'Product Name', key: 'productName', width: 25 },
+          { header: 'Period', key: 'period', width: 15 },
+          { header: 'Quantity Sold', key: 'totalSales', width: 15 },
+          { header: 'Total Price', key: 'totalPrice', width: 15 },
+        ];
+  
+        // Add summary
+        worksheet.addRow(['Summary']);
+        worksheet.addRow(['Total Orders', totalOrders]);
+        worksheet.addRow(['Total Items Sold', totalItemsSold]);
+        worksheet.addRow(['Total Sales', `₹${totalSales.toFixed(2)}`]);
+        worksheet.addRow([]);
+  
+        // Add report data
+        reportData.forEach(item => {
+          worksheet.addRow({
+            productName: item.productName || 'Unknown',
+            period: item.date || (reportType === 'daily' || reportType === 'custom' ? 'N/A' : ''),
+            totalSales: item.totalSales,
+            totalPrice: `₹${item.totalPrice.toFixed(2)}`,
+          });
+        });
+  
+        // Generate Excel file
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="sales_report_${reportType}_${Date.now()}.xlsx"`
+        );
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        await workbook.xlsx.write(res);
+        res.end();
+      } else {
+        return res.status(400).json({ error: 'Invalid download format' });
+      }
     } catch (error) {
-        console.error('Error generating report:', error);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error('Error generating report:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
-
+  };
 
 module.exports = {
     adminLoginPage,

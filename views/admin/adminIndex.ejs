@@ -111,58 +111,48 @@
         </form>
     </div>
 
-    <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="reportModal" tabindex="-1" role="dialog" aria-labelledby="reportModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="reportModalLabel">Generate Sales Report</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="reportForm">
-                        <div class="form-group">
-                            <label for="reportType">Report Type</label>
-                            <select class="form-control" id="reportType">
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="yearly">Yearly</option>
-                                <option value="custom">Custom Date Range</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="customDateRange" style="display:none;">
-                            <label for="startDate">Start Date</label>
-                            <input type="date" class="form-control" id="startDate">
-                            <label for="endDate" class="mt-2">End Date</label>
-                            <input type="date" class="form-control" id="endDate">
-                        </div>
-                        <div class="form-group">
-                            <label for="filterType">Filter By</label>
-                            <select class="form-control" id="filterType">
-                                <option value="day">1 Day</option>
-                                <option value="week">1 Week</option>
-                                <option value="month">1 Month</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="downloadFormat">Download Format</label>
-                            <select class="form-control" id="downloadFormat">
-                                <option value="pdf">PDF</option>
-                                <option value="excel">Excel</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="generateReport">Generate Report</button>
-                </div>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="reportModalLabel">Generate Sales Report</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
+            <div class="modal-body">
+              <form id="reportForm">
+                <div class="form-group">
+                  <label for="reportType">Report Type</label>
+                  <select class="form-control" id="reportType">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="custom">Custom Date Range</option>
+                  </select>
+                </div>
+                <div class="form-group" id="customDateRange" style="display:none;">
+                  <label for="startDate">Start Date</label>
+                  <input type="date" class="form-control" id="startDate">
+                  <label for="endDate" class="mt-2">End Date</label>
+                  <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="form-group">
+                  <label for="downloadFormat">Download Format</label>
+                  <select class="form-control" id="downloadFormat">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="generateReport">Generate Report</button>
+            </div>
+          </div>
         </div>
-    </div>
-
+      </div>
     <div class="chart-container">
         <canvas id="myChart"></canvas>
     </div>
@@ -241,53 +231,56 @@
         let myChart = null;
 
         document.getElementById('reportType').addEventListener('change', function () {
-            const reportType = this.value;
-            document.getElementById('customDateRange').style.display = 
-                reportType === 'custom' ? 'block' : 'none';
-        });
+    const reportType = this.value;
+    document.getElementById('customDateRange').style.display = reportType === 'custom' ? 'block' : 'none';
+  });
 
-        document.getElementById('generateReport').addEventListener('click', function () {
-            const reportType = document.getElementById('reportType').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const downloadFormat = document.getElementById('downloadFormat').value;
+  document.getElementById('generateReport').addEventListener('click', function () {
+    const reportType = document.getElementById('reportType').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const downloadFormat = document.getElementById('downloadFormat').value;
 
-            if (reportType === 'custom' && new Date(endDate) < new Date(startDate)) {
-                alert('End date cannot be before start date.');
-                return;
-            }
+    if (reportType === 'custom' && (!startDate || !endDate)) {
+      alert('Please select both start and end dates for custom range.');
+      return;
+    }
 
-            
-            fetch('/admin/generateReport', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ reportType, startDate, endDate, downloadFormat }),
-            })
-            .then(response => {
-                console.log('response from report',response)
-                if (!response.ok) throw new Error('Failed to generate report.');
-                const contentDisposition = response.headers.get('Content-Disposition');
-                const fileName = contentDisposition.split('filename=')[1].replace(/"/g, '');
-                return response.blob().then(blob => ({ blob, fileName }));
-            })
-            .then(({ blob, fileName }) => {
-                console.log('response from report2')
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            })
-            .catch(error => {
-                console.log('error response from report',error)
-                console.error('Error generating report:', error);
-                alert('There was an error generating the report. Please try again.');
-            });
-        });
+    if (reportType === 'custom' && new Date(endDate) < new Date(startDate)) {
+      alert('End date cannot be before start date.');
+      return;
+    }
+
+    fetch('/admin/generateReport', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ reportType, startDate, endDate, downloadFormat }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to generate report.');
+        }
+        const contentDisposition = response.headers.get('Content-Disposition') || `attachment; filename="sales_report_${reportType}_${Date.now()}.${downloadFormat}"`;
+        const fileName = contentDisposition.split('filename=')[1]?.replace(/"/g, '') || `sales_report_${reportType}_${Date.now()}.${downloadFormat}`;
+        return response.blob().then(blob => ({ blob, fileName }));
+      })
+      .then(({ blob, fileName }) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => {
+        console.error('Error generating report:', error);
+        alert('Failed to generate report. Please try again.');
+      });
+  });
 
         // Chart handling
         async function renderChart(filterType) {

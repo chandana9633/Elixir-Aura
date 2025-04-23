@@ -170,73 +170,72 @@ const cancelOrder = async (req, res) => {
     }
   };
 
-
 const cancelPerticularProduct = async (req, res) => {
     try {
-        const { orderId, productId } = req.params; 
-        const { newStatus } = req.body;
-
-        if (!orderId || !productId || !newStatus) {
-            return res.status(400).json({ success: false, message: 'Missing required fields' });
-        }
-
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
-        }
-
-        const productItemIndex = order.productItems.findIndex(item => item.productId.toString() === productId);
-        if (productItemIndex === -1) {
-            return res.status(404).json({ success: false, message: 'Product item not found in order' });
-        }
-
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, message: 'Product not found' });
-        }
-
-        if (newStatus === 'Cancelled') {
-            order.productItems[productItemIndex].status = newStatus;
-            product.stock += order.productItems[productItemIndex].quantity;
-            await product.save();
-
-            const refundAmount = order.productItems[productItemIndex].offerPrice || order.productItems[productItemIndex].total;
-
-            order.originalPrice -= refundAmount;
-            order.totalPrice -= refundAmount;
-
-            let wallet = await Wallet.findOne({ userId: order.userId });
-            if (!wallet) {
-                wallet = new Wallet({
-                    userId: order.userId,
-                    balance: refundAmount,
-                    transaction: [{
-                        amount: refundAmount,
-                        type: 'Credit',
-                        description: `Refund for canceled product ${product.name} from order ${orderId}`,
-                        orderId: orderId
-                    }]
-                });
-            } else {
-                wallet.balance += refundAmount;
-                wallet.transaction.push({
-                    amount: refundAmount,
-                    type: 'Credit',
-                    description: `Refund for canceled product ${product.name} from order ${orderId}`,
-                    orderId: orderId
-                });
-            }
-
-            await wallet.save();
+      const { orderId, productId } = req.params;
+      const { newStatus } = req.body;
+  
+      if (!orderId || !productId || !newStatus) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+      }
+  
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ success: false, message: 'Order not found' });
+      }
+  
+      const productItemIndex = order.productItems.findIndex(item => item.productId.toString() === productId);
+      if (productItemIndex === -1) {
+        return res.status(404).json({ success: false, message: 'Product item not found in order' });
+      }
+  
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ success: false, message: 'Product not found' });
+      }
+  
+      if (newStatus === 'Cancelled') {
+        order.productItems[productItemIndex].status = newStatus;
+        product.stock += order.productItems[productItemIndex].quantity;
+        await product.save();
+  
+        const refundAmount = order.productItems[productItemIndex].offerPrice || order.productItems[productItemIndex].total;
+  
+        order.originalPrice -= refundAmount;
+        order.totalPrice -= refundAmount;
+  
+        let wallet = await Wallet.findOne({ userId: order.userId });
+        if (!wallet) {
+          wallet = new Wallet({
+            userId: order.userId,
+            balance: refundAmount,
+            transaction: [{
+              amount: refundAmount,
+              type: 'Credit',
+              description: `Refund for canceled product ${product.name} from order ${orderId}`,
+              orderId: orderId,
+            }],
+          });
         } else {
-            return res.status(400).json({ success: false, message: 'Invalid cancellation status or conditions not met' });
+          wallet.balance += refundAmount;
+          wallet.transaction.push({
+            amount: refundAmount,
+            type: 'Credit',
+            description: `Refund for canceled product ${product.name} from order ${orderId}`,
+            orderId: orderId,
+          });
         }
-
-        await order.save();
-        res.status(200).json({ success: true, message: 'Product cancelled successfully' });
+  
+        await wallet.save();
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid cancellation status or conditions not met' });
+      }
+  
+      await order.save();
+      res.status(200).json({ success: true, message: 'Product cancelled successfully' });
     } catch (error) {
-        console.error('Error cancelling product:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+      console.error('Error cancelling product:', error);
+      res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
