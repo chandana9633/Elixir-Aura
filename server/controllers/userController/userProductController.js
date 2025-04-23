@@ -176,7 +176,7 @@ const SearchingProduct = async (req, res) => {
             .populate('category')
             .skip(skip)
             .limit(perPage);
-
+        
         res.json({ success: true, products, totalPages });
     } catch (error) {
         console.error('Error in searching products:', error);

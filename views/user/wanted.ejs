@@ -1,1198 +1,739 @@
 
-</style>
-</head>
-<body>
-    <div class="container">
-        <h2>Checkout</h2>
-    
-        <!-- Address Section -->
-        <div class="address-section">
-            <h3>Select Address</h3>
-            <% user.address.forEach((add) => { %>
-                <div class="address-card">
-                    <input type="radio" name="address" value="<%= add._id %>" id="address_<%= add._id %>">
-                    <label for="address_<%= add._id %>">
-                        <span><%= add.street %>, <%= add.city %>, <%= add.state %>, <%= add.pincode %>, <%= add.country %></span>
-                    </label>
-                    <button class="edit-address-btn" 
-                            data-id="<%= add._id %>" 
-                            data-street="<%= add.street %>" 
-                            data-city="<%= add.city %>" 
-                            data-state="<%= add.state %>" 
-                            data-pincode="<%= add.pincode %>" 
-                            data-country="<%= add.country %>">Edit</button>
-                </div>
-            <% }); %>
-            <button class="add-address-btn">+ Add New Address</button>
-        </div>
-    
-        <div class="modal" id="add-address-modal">
-            <div class="modal-content">
-                <h3>Add New Address</h3>
-                <form id="add-address-form" data-address-id="">
-                    <input type="text" name="street" placeholder="Street Address" required />
-                    <input type="text" name="city" placeholder="City" required />
-                    <input type="text" name="state" placeholder="State" required />
-                    <input type="text" name="pincode" placeholder="Pincode" required />
-                    <input type="text" name="country" placeholder="Country" required />
-                    <button type="submit">Save</button>
-                    <button type="button" class="close-modal">Cancel</button>
-                </form>
-            </div>
-        </div>
-    
-        <!-- Order Summary -->
-        <div class="summary-section">
-            <h3>Order Summary</h3>
-            <% cart.items.forEach((item) => { %>
-                <div class="summary-item">
-                    <span><%= item.productId.name %>:</span>
-                    <span><%= item.quantity %> x ₹<%= item.productId.price %></span>
-                </div>
-            <% }); %>
-            <hr />
-    
-            <!-- Coupon Section -->
-            <div class="coupon-section">
-                <input type="text" id="coupon-code" placeholder="Enter coupon code" />
-                <button id="apply-coupon-btn" class="apply-coupon-btn">Apply Coupon</button>
-                <p id="coupon-message" style="color: green; display: none;">Coupon Applied Successfully</p>
-                <p id="coupon-error" style="color: red; display: none;">Invalid Coupon Code</p>
-            </div>
-            <a href="/coupon" style="text-decoration: none;">Click To Find Coupons !</a>
-            <% if (cart.couponDiscount > 0) { %>
-                <button id="remove-coupon-btn">Remove Coupon</button>
-            <% } %>
-    
-            <hr />
-    
-            <!-- Totals -->
-            <!-- <div class="summary-item">
-                <span>Grand Total:</span>
-                <span></span>
-            </div> -->
-            <div class="summary-item">
-                <span>Discount:</span>
-                <span>₹<%= cart.discount %></span>
-            </div>
-            <% if (cart.couponDiscount > 0) { %>
-                <div class="summary-item">
-                    <span>Coupon Discount:</span>
-                    <span>₹</span>
-                </div>
-            <% } %>
-            <div class="summary-item">
-                <strong>Total Amount:</strong>
-                <strong>₹<%= cart.totalAmount %></strong>
-            </div>
-        </div>
-    
-        <!-- Payment Section -->
-        <div class="payment-section">
-            <h3>Payment Method</h3>
-            <div class="payment-method">
-                <input type="radio" name="payment" id="Razorpay" value="Razorpay" />
-                <label for="Razorpay">Razorpay</label>
-                <img style="width: 20%; object-fit: cover;" src="/" alt="">
-            </div>
-            <div class="payment-method">
-                <input type="radio" name="payment" id="Wallet" value="Wallet" />
-                <label for="Wallet">Use Wallet</label>
-                <p>Balance: 
-                    <span style="font-weight: bold;"></span>
-                </p>
-            </div>
-            <div class="payment-method">
-                <input type="radio" name="payment" id="COD" value="COD" />
-                <label for="COD">Cash on Delivery</label>
-            </div>
-            <div class="cod-info" style="color: red; display: none;">
-                You can only purchase products below ₹2000 with COD.
-            </div>
-        </div>
-    
-        <!-- Hidden Inputs -->
-        <input type="hidden" name="discount" value="" />
-        <input type="hidden" name="couponCode" value="" />
-    
-        <!-- Submit Button -->
-        <button class="place-order-btn" type="submit">Place Order</button>
-    </div>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 __________________________________________________________________________________________________
 
-admin index Page
-
-
-
-
-
-
-
-<%-include('../layout/admin/adminHeader')%>	
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="/admin/dashboard" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
-                    </div> 
-
-                    
-        
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Earnings (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                Earnings (Annual)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">$215,000</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-
-                        <!-- Earnings (Monthly) Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Tasks
-                                            </div>
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col-auto">
-                                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="progress progress-sm mr-2">
-                                                        <div class="progress-bar bg-info" role="progressbar"
-                                                            style="width: 50%" aria-valuenow="50" aria-valuemin="0"
-                                                            aria-valuemax="100"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-
-                        <!-- Pending Requests Card Example -->
-                        <!-- <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Pending Requests</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-                    </div>
-
-                    <!-- Content Row -->
-
-                    <div class="row">
-
-                        <!-- Area Chart -->
-                        <div class="col-xl-8 col-lg-7">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pie Chart -->
-                        <!-- <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4"> -->
-                                <!-- Card Header - Dropdown -->
-                                <!-- <div
-                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div> -->
-                                <!-- Card Body -->
-                                <!-- <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
-                                        </span>
-                                    </div>
-                                </div> -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Content Column -->
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Project Card Example -->
-                            <!-- <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h4 class="small font-weight-bold">Server Migration <span
-                                            class="float-right">20%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 20%"
-                                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Sales Tracking <span
-                                            class="float-right">40%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"
-                                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Customer Database <span
-                                            class="float-right">60%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar" role="progressbar" style="width: 60%"
-                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Payout Details <span
-                                            class="float-right">80%</span></h4>
-                                    <div class="progress mb-4">
-                                        <div class="progress-bar bg-info" role="progressbar" style="width: 80%"
-                                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <h4 class="small font-weight-bold">Account Setup <span
-                                            class="float-right">Complete!</span></h4>
-                                    <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"
-                                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                            <!-- Color System -->
-                            <!-- <div class="row">
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-primary text-white shadow">
-                                        <div class="card-body">
-                                            Primary
-                                            <div class="text-white-50 small">#4e73df</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-success text-white shadow">
-                                        <div class="card-body">
-                                            Success
-                                            <div class="text-white-50 small">#1cc88a</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-info text-white shadow">
-                                        <div class="card-body">
-                                            Info
-                                            <div class="text-white-50 small">#36b9cc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-warning text-white shadow">
-                                        <div class="card-body">
-                                            Warning
-                                            <div class="text-white-50 small">#f6c23e</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-danger text-white shadow">
-                                        <div class="card-body">
-                                            Danger
-                                            <div class="text-white-50 small">#e74a3b</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-secondary text-white shadow">
-                                        <div class="card-body">
-                                            Secondary
-                                            <div class="text-white-50 small">#858796</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-light text-black shadow">
-                                        <div class="card-body">
-                                            Light
-                                            <div class="text-black-50 small">#f8f9fc</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 mb-4">
-                                    <div class="card bg-dark text-white shadow">
-                                        <div class="card-body">
-                                            Dark
-                                            <div class="text-white-50 small">#5a5c69</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
-
-                        </div>
-
-                        <div class="col-lg-6 mb-4">
-
-                            <!-- Illustrations -->
-                            <!-- <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Illustrations</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                                            src="/adminHome/img/undraw_posting_photo.svg" alt="...">
-                                    </div>
-                                    <p>Add some quality, svg illustrations to your project courtesy of <a
-                                            target="_blank" rel="nofollow" href="https://undraw.co/">unDraw</a>, a
-                                        constantly updated collection of beautiful svg images that you can use
-                                        completely free and without attribution!</p>
-                                    <a target="_blank" rel="nofollow" href="https://undraw.co/">Browse Illustrations on
-                                        unDraw &rarr;</a>
-                                </div>
-                            </div> -->
-
-                            <!-- Approach -->
-                            <!-- <div class="card shadow mb-4">
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Development Approach</h6>
-                                </div>
-                                <div class="card-body">
-                                    <p>SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.</p>
-                                    <p class="mb-0">Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.</p>
-                                </div>
-                            </div> -->
-
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <!-- <span>Copyright &copy; Your Website 2021</span> -->
-                    </div>
-                </div>
-            </footer>
-            
-        </div>
-
-    </div>
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="/adminHome/vendor/jquery/jquery.min.js"></script>
-    <script src="/adminHome/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <script src="/adminHome/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-
-    <script src="/adminHome/js/sb-admin-2.min.js"></script>
-
-    <script src="/adminHome/vendor/chart.js/Chart.min.js"></script>
-    <script src="/adminHome/js/demo/chart-area-demo.js"></script>
-    <script src="/adminHome/js/demo/chart-pie-demo.js"></script>
-
-</body>
-</html>
-
-__________________________________________________________________________________________________
-
-
-admin dashboard code
-
-const Admin = require('../../models/admin/adminModel'); 
-const bcrypt = require('bcrypt'); 
-const User = require('../../models/user/userModel'); 
-const Order=require('../../models/user/orderMoel')
-const Product=require('../../models/admin/productModel')
-const PDFDocument = require('pdfkit');
-const ExcelJS = require('exceljs');
-const fs = require('fs');
-
-
-const adminLoginPage = async (req, res) => {
-    res.render('admin/adminLogin');
-};
-
-// const admindashboard=async (req,res) => {
-//   let { filterType, startDate, endDate } = req.query;
-//   filterType = filterType || 'daily';
-
-//   const now = new Date();
-//   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-//   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-//   switch(filterType) {
-//     case 'daily':
-//       dateQuery = {
-//         createdAt: {
-//           $gte: todayStart,
-//           $lte: todayEnd
-//         }
-//       };
-//       break;
-
-//     case 'weekly':
-//       const weekStart = new Date(todayStart);
-//       weekStart.setDate(todayStart.getDate() - todayStart.getDay());
-//       const weekEnd = new Date(todayEnd);
-//       weekEnd.setDate(weekStart.getDate() + 6);
-//       dateQuery = {
-//         createdAt: {
-//           $gte: weekStart,
-//           $lte: weekEnd
-//         }
-//       };
-//       break;
-
-//     case 'yearly':
-//       const yearStart = new Date(now.getFullYear(), 0, 1);
-//       const yearEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-//       dateQuery = {
-//         createdAt: {
-//           $gte: yearStart,
-//           $lte: yearEnd
-//         }
-//       };
-//       break;
-
-//     case 'custom':
-//       if (startDate && endDate) {
-//         const customStart = new Date(startDate);
-//         const customEnd = new Date(endDate);
-//         customEnd.setHours(23, 59, 59, 999);
-//         dateQuery = {
-//           createdAt: {
-//             $gte: customStart,
-//             $lte: customEnd
-//           }
-//         };
-//       } else {
-//         dateQuery = {
-//           createdAt: {
-//             $gte: todayStart,
-//             $lte: todayEnd
-//           }
-//         };
-//       }
-//       break;
-//   }
-
-//   const dashboardData={
-//     filterType,
-//     startDate: startDate || '',
-//     endDate: endDate || '',
-//   }
-
-
-//     res.render('admin/adminIndex',dashboardData)
-// }
-
-
-// const admindashboard = async (req, res) => {
-//   try {
-//     let { filterType, startDate, endDate } = req.query;
-//     filterType = filterType || 'daily';
-
-//     const now = new Date();
-//     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-//     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-//     let dateQuery = {};
-
-//     switch (filterType) {
-//       case 'daily':
-//         dateQuery = {
-//           createdAt: { $gte: todayStart, $lte: todayEnd },
-//         };
-//         break;
-
-//       case 'weekly':
-//         const weekStart = new Date(todayStart);
-//         weekStart.setDate(todayStart.getDate() - todayStart.getDay());
-//         const weekEnd = new Date(todayEnd);
-//         weekEnd.setDate(weekStart.getDate() + 6);
-//         dateQuery = {
-//           createdAt: { $gte: weekStart, $lte: weekEnd },
-//         };
-//         break;
-
-//       case 'yearly':
-//         const yearStart = new Date(now.getFullYear(), 0, 1);
-//         const yearEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
-//         dateQuery = {
-//           createdAt: { $gte: yearStart, $lte: yearEnd },
-//         };
-//         break;
-
-//       case 'custom':
-//         if (startDate && endDate) {
-//           const customStart = new Date(startDate);
-//           const customEnd = new Date(endDate);
-//           customEnd.setHours(23, 59, 59, 999);
-//           dateQuery = {
-//             createdAt: { $gte: customStart, $lte: customEnd },
-//           };
-//         } else {
-//           dateQuery = {
-//             createdAt: { $gte: todayStart, $lte: todayEnd },
-//           };
-//         }
-//         break;
-//     }
-
-//     const ordersData = await Order.aggregate([
-//       { $match: dateQuery },
-//       {
-//         $facet: {
-//           totals: [
-//             {
-//               $group: {
-//                 _id: null,
-//                 totalAmount: { $sum: '$total' },
-//                 totalOrders: { $sum: 1 },
-//                 totalCouponDiscount: { $sum: { $ifNull: ['$couponDiscount', 0] } },
-//                 totalDiscountPercentage: {
-//                   $sum: {
-//                     $multiply: [
-//                       '$total',
-//                       { $divide: [{ $ifNull: ['$discountPercentage', 0] }, 100] },
-//                     ],
-//                   },
-//                 },
-//               },
-//             },
-//           ],
-//           dailyStats: [
-//             {
-//               $group: {
-//                 _id: {
-//                   $dateToString: {
-//                     format: '%Y-%m-%d',
-//                     date: '$createdAt',
-//                     timezone: 'Asia/Kolkata',
-//                   },
-//                 },
-//                 dailyAmount: { $sum: '$total' },
-//                 dailyCouponDiscount: { $sum: { $ifNull: ['$couponDiscount', 0] } },
-//                 dailyDiscountPercentage: {
-//                   $sum: {
-//                     $multiply: [
-//                       '$total',
-//                       { $divide: [{ $ifNull: ['$discountPercentage', 0] }, 100] },
-//                     ],
-//                   },
-//                 },
-//               },
-//             },
-//             { $sort: { _id: 1 } },
-//           ],
-//           statusCounts: [
-//             { $unwind: '$products' },
-//             {
-//               $group: {
-//                 _id: '$products.orderStatus',
-//                 count: { $sum: 1 },
-//               },
-//             },
-//           ],
-//         },
-//       },
-//     ]);
-
-//     const aggregateData = ordersData[0];
-//     const totals = aggregateData.totals[0] || {
-//       totalAmount: 0,
-//       totalOrders: 0,
-//       totalCouponDiscount: 0,
-//       totalDiscountPercentage: 0,
-//     };
-
-//     const orderStatusMap = {
-//       pending: 0,
-//       shipped: 0,
-//       Delivered: 0,
-//       'request return': 0,
-//       returned: 0,
-//       'request cancellation': 0,
-//       cancelled: 0,
-//     };
-
-//     aggregateData.statusCounts.forEach((status) => {
-//       if (orderStatusMap.hasOwnProperty(status._id)) {
-//         orderStatusMap[status._id] = status.count;
-//       }
-//     });
-
-//     const overallOrderAmount = aggregateData.dailyStats.map((day) => ({
-//       date: day._id,
-//       amount: parseFloat(day.dailyAmount.toFixed(2)),
-//     }));
-
-//     const overallDiscount = aggregateData.dailyStats.map((day) => ({
-//       date: day._id,
-//       amount: parseFloat(
-//         (day.dailyCouponDiscount + day.dailyDiscountPercentage).toFixed(2)
-//       ),
-//     }));
-
-//     const totalDiscount = totals.totalCouponDiscount + totals.totalDiscountPercentage;
-
-//     // Top Products Aggregation
-//     const topProducts = await Order.aggregate([
-//       { $match: dateQuery },
-//       { $unwind: "$products" },
-//       { $group: { _id: "$products.productId", totalSold: { $sum: "$products.quantity" } } },
-//       { $sort: { totalSold: -1 } },
-//       { $limit: 5 },
-//       {
-//         $lookup: {
-//           from: "products",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "product",
-//         },
-//       },
-//       { $unwind: "$product" },
-//       {
-//         $project: {
-//           productName: "$product.name",
-//           totalSold: 1,
-//           image: "$product.image",  // Make sure image field is present
-//           product: 1,
-//         },
-//       },
-//     ]);
-
-//     // Top Categories Aggregation
-//     const topCategories = await Order.aggregate([
-//       { $match: dateQuery },
-//       { $unwind: "$products" },
-//       {
-//         $lookup: {
-//           from: "products",
-//           localField: "products.productId",
-//           foreignField: "_id",
-//           as: "productDetails",
-//         },
-//       },
-//       { $unwind: "$productDetails" },
-//       { $group: { _id: "$productDetails.category", totalSold: { $sum: "$products.quantity" } } },
-//       { $sort: { totalSold: -1 } },
-//       { $limit: 5 },
-//       {
-//         $lookup: {
-//           from: "categories",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "category",
-//         },
-//       },
-//       { $unwind: "$category" },
-//       {
-//         $project: {
-//           categoryName: "$category.name",
-//           totalSold: 1,
-//         },
-//       },
-//     ]);
-
-//     const dashboardData = {
-//       filterType,
-//       startDate: startDate || '',
-//       endDate: endDate || '',
-//       totalAmount: parseFloat(totals.totalAmount.toFixed(2)),
-//       totalDiscount: parseFloat(totalDiscount.toFixed(2)),
-//       salesCount: totals.totalOrders,
-//       orderStatusMap,
-//       overallOrderAmount,
-//       overallDiscount,
-//       topProducts,
-//       topCategories,
-//     };
-
-//     console.log('Dashboard Data:', dashboardData);
-
-//     res.render('admin/adminIndex', dashboardData);
-//   } catch (error) {
-//     console.error('Error loading dashboard:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// };
-
-
-
-const admindashboard = async (req, res) => {
-  try {
-        // Aggregation for top-selling Products
-    const topProducts = await Order.aggregate([
-      { $unwind: "$productItems" },
-      {
-          $group: {
-              _id: "$productItems.productId",
-              totalSales: { $sum: "$productItems.quantity" }, 
-          },
-      },
-      { $sort: { totalSales: -1 } }, 
-      { $limit: 10 }, 
-      {
-          $lookup: {
-              from: "products", 
-              localField: "_id",
-              foreignField: "_id", 
-              as: "productDetails",
-          },
-      },
-      { $unwind: "$productDetails" }, 
-      {
-          $project: {
-              _id: 1,
-              totalSales: 1,
-              productName: "$productDetails.productName",
-              productImage: "$productDetails.image",
-              productPrice: "$productDetails.price",
-          },
-      },
-  ]);
-  
-
-    // Aggregation for top-selling categories
-    const topCategories = await Order.aggregate([
-      { $unwind: "$productItems" },
-      {
-        $lookup: {
-          from: "products",
-          localField: "productItems.productId",
-          foreignField: "_id",
-          as: "productDetails",
-        },
-      },
-      { $unwind: "$productDetails" },
-      {
-        $group: {
-          _id: "$productDetails.category",
-          totalSales: { $sum: "$productItems.quantity" },
-        },
-      },
-      { $sort: { totalSales: -1 } },
-      { $limit: 10 },
-      {
-        $lookup: {
-          from: "categories",
-          localField: "_id",
-          foreignField: "_id",
-          as: "categoryDetails",
-        },
-      },
-      { $unwind: "$categoryDetails" },
-      {
-        $project: {
-          _id: 1,
-          totalSales: 1,
-          categoryName: "$categoryDetails.name",
-        },
-      },
-    ]);
-
-     res.render('admin/adminIndex', {
-      topProducts,
-      topCategories,
-      
-    });
-    return;
-  } catch (error) {
-    console.error('Error loading dashboard:', error);
-    res.status(500).send('Internal Server Error');
-  }
-};
-
-
-
-const admin='admin@gmail.com'
-const adminPassword='1234'
-
-const adminHome = async (req, res) => {
-    const { email, password } = req.body;
-
-
-    
-    const fieldErrors = {};
-    if (!email || !password) {
-        if (!email) fieldErrors.email = 'Please enter a valid email.';
-        if (!password) fieldErrors.password = 'Please enter your password.';
-        return res.status(400).json({ fieldErrors })
+<% if (order.status === 'Delivered' && order.productItems.length > 1) { %>
+    <% if (item.status === 'Returned') { %>
+        <p class="return-msg" style="color: #06678d; font-weight: bold;">This product has already been returned.</p>
+    <% } else { %>
+        <a href="/productReturn/<%= order._id %>/<%= item.productId._id %>">
+            <button type="button" class="return-button">Return Product</button>
+        </a>
+    <% } %>
+<% } %>
+
+
+_______> product return
+
+
+
+<%-include('../layout/user/indexHeader')%>	
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Listing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+    --primary-color: #1b1d1c;
+    --secondary-color: #efb033;
+    --text-gray: #666;
+    --border-color: #eee;
+    --background-gray: #fafafa;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-gray);
+    margin: 0;
+    padding: 0;
+}
+
+/* Search Section */
+.search-container {
+    background-color: white;
+    padding: 30px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-input {
+    border-radius: 25px;
+    padding: 12px 25px;
+    font-size: 1.1em;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    box-shadow: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.search-btn {
+    border-radius: 0 25px 25px 0;
+    padding: 12px 25px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.search-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.filter-section {
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    background-color: white;
+    height: 100%;
+}
+
+.filter-heading {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.form-check-label {
+    font-size: 0.9em;
+    color: var(--text-gray);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-check-input {
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.form-check-input:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.filter-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 20px 0;
+}
+
+.count-badge {
+    background-color: #f5f5f5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    color: var(--text-gray);
+}
+
+.product-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+    background: white;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sale-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.product-img {
+    height: 250px;
+    object-fit: contain;
+    padding: 20px;
+    background-color: white;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.product-title {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.product-brand {
+    color: var(--text-gray);
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.current-price {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.save-price {
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+.sort-select {
+    border-color: var(--border-color);
+    color: var(--text-gray);
+    padding: 8px 15px;
+    font-size: 0.9em;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.sort-select:focus {
+    border-color: var(--primary-color);
+}
+
+.results-info {
+    color: var(--text-gray);
+    font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+    .filter-section {
+        border-right: none;
+        margin-bottom: 20px;
     }
 
-    try {
-        // const admin = await Admin.findOne({ email });
-        // if (!admin) {
-        //     fieldErrors.email = 'Incorrect email or password';
-        //     return res.status(401).json({ fieldErrors });
-        // }
-        
-
-        // const isMatch = await bcrypt.compare(password, admin.password);
-        // if (!isMatch) {
-        //     fieldErrors.password = 'Incorrect email or password';
-        //     return res.status(401).json({ fieldErrors });
-        // }
-
-        if (email===admin&&password===adminPassword) {
-            req.session.admin=true;
-            res.status(200).json({ redirectUrl: '/admin/dashboard' });
-        }
-    } catch (error) {
-        console.error('Error during admin login:', error);
-        res.status(500).json({ message: 'Server error. Please try again later.' });
+    .product-card {
+        margin-bottom: 20px;
     }
-};
-const getUsersList = async (req, res) => {
-    try {
-        const limit = 5;
-        const page = parseInt(req.query.page) || 1;
-
-        const totalUsers = await User.countDocuments();
-        const totalPages = Math.ceil(totalUsers / limit);
-
-        const users = await User.find()
-            .skip((page - 1) * limit) 
-            .limit(limit);
-
-        res.render('admin/usersList', { 
-            users, 
-            currentPage: page, 
-            totalPages 
-        });
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).send('Server Error');
-    }
-};
-
-
-const changeStatus = async (req, res) => {
-    const { userId } = req.params;
-    const { status } = req.body;
-
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        user.status = status;  
-
-        await user.save(); 
-
-        res.status(200).json({ success: true, status: user.status });
-    } catch (error) {
-        console.error('Error changing user status:', error);
-        res.status(500).json({ message: 'Failed to change user status' });
-    }
-};
-
-
-const adminLogout=async (req,res) => {
-    req.session.destroy()
-    res.redirect('/admin/adminLoginPage')
 }
 
 
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pagination a {
+    text-decoration: none;
+    padding: 5px 10px;
+    background-color: #f1f1f1;
+    color: #333;
+    border-radius: 5px;
+}
+
+.pagination a.active {
+    background-color: #b6b1b1;
+    color: #fff;
+}
+
+.pagination a:hover {
+    background-color: #666565;
+}
 
 
-// Generate Sales Report
-const generateReport = async (req, res) => {
-    console.log('inside generate report')
-    try {
-        const { reportType, startDate, endDate, downloadFormat } = req.body;
+.clear-btn {
+    background-color: #333;
+    color: #fff; 
+    padding: 10px 20px; 
+    font-size: 16px;
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s, transform 0.2s;
+}
 
-        console.log('req.body',req.body)
-        // Define date range based on report type
-        let dateFilter = {};
-        const now = new Date();
+.clear-btn:hover {
+    background-color: #444; 
+    transform: translateY(-2px); 
+}
 
-        switch (reportType) {
-            case 'daily':
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(now.setHours(0, 0, 0, 0)),
-                        $lte: new Date(now.setHours(23, 59, 59, 999)),
-                    },
-                };
-                break;
-            case 'weekly':
-                const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(weekStart.setHours(0, 0, 0, 0)),
-                        $lte: new Date(now.setHours(23, 59, 59, 999)),
-                    },
-                };
-                break;
-            case 'yearly':
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(now.getFullYear(), 0, 1),
-                        $lte: new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999),
-                    },
-                };
-                break;
-            case 'custom':
-                // if (!startDate || !endDate) {
-                //     return res.status(400).json({ error: 'Start date and end date are required for custom range' });
-                // }
-                dateFilter = {
-                    createdAt: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate),
-                    },
-                };
-                break;
-            default:
-                return res.status(400).json({ error: 'Invalid report type' });
+.clear-btn:active {
+    background-color: #222; 
+    transform: translateY(0); 
+}
+
+    </style>
+</head>
+<body>
+   <!-- Search Section -->
+<div class="search-container">
+    <div class="container mt-5">
+        <div class="input-group">
+            <input type="text" class="form-control search-input" id="inptValue" placeholder="Search products...">
+            <button class="btn search-btn" id="searchButton" type="button">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            <div class="filter-section">
+                <button id="clear-all" class="clear-btn">Clear</button>
+                <div class="filter-divider"></div>
+
+                <div class="mb-4">
+                    <h5 class="filter-heading">Category</h5>
+                    <% categories.forEach((category) => { %>
+                        <div class="form-check mb-2">
+                            <% if(category._id.toString() == selectedCategory){ %>
+                                <input class="form-check-input category-filter" checked type="checkbox" id="<%= category._id %>" data-category-id="<%= category._id %>">
+                                <% }else{ %>
+                                    <input class="form-check-input category-filter" type="checkbox" id="<%= category._id %>" data-category-id="<%= category._id %>">
+                                    <% } %> 
+                            <label class="form-check-label" for="<%= category._id %>">
+                                <%= category.name %>
+                            </label>
+                        </div>
+                    <% }) %>
+                </div>
+                <div class="filter-divider"></div>
+
+                <div class="mb-4">
+                    <h5 class="filter-heading">Price Range</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input price-filter" type="radio" name="priceRange" id="price1" value="under1000">
+                        <label class="form-check-label" for="price1">
+                            Under ₹1,000
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input price-filter" type="radio" name="priceRange" id="price2" value="1000-1500">
+                        <label class="form-check-label" for="price2">
+                            ₹1,000 - ₹1,500
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input price-filter" type="radio" name="priceRange" id="price3" value="above1500">
+                        <label class="form-check-label" for="price3">
+                            Above ₹1,500
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9 col-md-8">
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <select class="form-select sort-select w-auto" id="sort-select">
+                        <option value="popularity">Popularity</option>
+                        <option value="priceLowToHigh">Price: Low to High</option>
+                        <option value="priceHighToLow">Price: High to Low</option>
+                        <option value="avgRatings">Average Ratings</option>
+                        <option value="featured">Featured</option>
+                        <option value="aToZ">A - Z</option>
+                        <option value="zToA">Z - A</option>
+                    </select>
+                </div>
+
+                <div class="row g-4">
+                    <% products.forEach((pro) => { %>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card product-card">
+                                <% if (pro.stock <= 0) { %>
+                                    <span class="sale-badge" style="background-color: red;">Out of Stock</span>
+                                <% } else { %>
+                                    <span class="sale-badge">Sale</span>
+                                <% } %>
+
+                                <div class="wishlist-btn" style="cursor: pointer;" data-product-id="<%- pro._id %>">
+                                    <i class="fa fa-heart-o" style="color: #ff6f61; font-size: 24px;"></i>
+                                </div>
+
+                                <a href="/loadProductPage/<%= pro._id %>">
+                                    <img src="/uploads/<%= pro.image[0] %>" alt="<%= pro.name %>" class="product-img">
+                                </a>
+
+                                <div class="card-body">
+                                    <h5 class="product-title"><%= pro.name %></h5>
+
+                                    <div class="d-flex flex-column">
+                                        <div>
+                                            <!-- Original Price (Strikethrough) -->
+                                            <span style="text-decoration: line-through; color: grey; font-size: 18px;">
+                                                ₹ <%= pro.price %>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="current-price ms-2">₹ <%= pro.price %></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+                                    <div class="mt-3 d-flex justify-content-between">
+                                        <% if (pro.stock > 0) { %>
+                                            
+                                            <button
+                                            style="color: #fef0f0;"
+                                            class="btn btn-dark btn-sm"
+                                            onclick="addToCart('<%= pro._id %>')">
+                                            Add to Cart
+                                            </button>
+
+                                        <% } else { %>
+                                            <button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <div class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="/shopPage?page=<%= currentPage - 1 %>">Previous</a>
+                    <% } %>
+
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <a href="/shopPage?page=<%= i %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+                    <% } %>
+
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/shopPage?page=<%= currentPage + 1 %>">Next</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+    // Category filter
+    document.querySelectorAll('.category-filter').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const categoryId = this.getAttribute('data-category-id');
+            const isChecked = this.checked;
+            const url = new URL(window.location.href);
+            
+            if (isChecked) {
+                url.searchParams.set('category', categoryId);
+            } else {
+                url.searchParams.delete('category');
+            }
+            
+            window.location.href = url.toString();
+        });
+    });
+
+    // Price filter
+    document.querySelectorAll('.price-filter').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const priceRange = this.value;
+            const url = new URL(window.location.href);
+
+            if (priceRange) {
+                url.searchParams.set('priceRange', priceRange);
+            } else {
+                url.searchParams.delete('priceRange');
+            }
+
+            window.location.href = url.toString();
+        });
+    });
+
+    // Sort functionality
+    document.getElementById('sort-select').addEventListener('change', function () {
+        const sortBy = this.value;
+        const url = new URL(window.location.href);
+
+        url.searchParams.set('sort', sortBy);
+        window.location.href = url.toString();
+    });
+
+    // Search functionality
+    const inputField = document.getElementById('inptValue');
+    const searchButton = document.getElementById('searchButton');
+
+    searchButton.addEventListener('click', () => {
+        const inputValue = inputField.value.trim();
+        if (inputValue !== '') {
+            performSearch(inputValue);
         }
+    });
 
-        console.log('date filter',dateFilter)
-        
-        // Fetch orders based on date filter
-        const orders = await Order.find(dateFilter)
-            .populate('userId', 'name email')
-            .populate('productItems.productId', 'productName');
-
-            console.log('oreders after report',orders)
-        if (!orders.length) {
-            return res.status(404).json({ error: 'No orders found for the selected period' });
+    inputField.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            const inputValue = inputField.value.trim();
+            if (inputValue !== '') {
+                performSearch(inputValue);
+            }
         }
+    });
 
-        // Calculate summary data
-        const totalSales = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-        const totalOrders = orders.length;
-        const totalItemsSold = orders.reduce((sum, order) => sum + (order.totalQuantity || 0), 0);
+    function performSearch(query) {
+        const data = new URLSearchParams({ query });
 
-        // Generate report based on download format
-        if (downloadFormat === 'pdf') {
-            const doc = new PDFDocument();
-            let buffers = [];
-            doc.on('data', buffers.push.bind(buffers));
-            doc.on('end', () => {
-                const pdfData = Buffer.concat(buffers);
-                res.setHeader('Content-Disposition', `attachment; filename="sales_report_${reportType}_${Date.now()}.pdf"`);
-                res.setHeader('Content-Type', 'application/pdf');
-                res.send(pdfData);
-            });
-
-            // PDF Content
-            doc.fontSize(20).text(`Sales Report - ${reportType}`, { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(12).text(`Period: ${reportType === 'custom' ? `${startDate} to ${endDate}` : reportType}`);
-            doc.text(`Total Orders: ${totalOrders}`);
-            doc.text(`Total Items Sold: ${totalItemsSold}`);
-            doc.text(`Total Sales: ₹${totalSales.toFixed(2)}`);
-            doc.moveDown();
-
-            // Order Details Table
-            doc.text('Order Details:', { underline: true });
-            orders.forEach((order, index) => {
-                doc.moveDown(0.5);
-                doc.text(`Order #${index + 1}`);
-                doc.text(`Order ID: ${order._id}`);
-                doc.text(`User: ${order.userId.name} (${order.userId.email})`);
-                doc.text(`Total: ₹${order.totalPrice || 0}`);
-                doc.text(`Status: ${order.status}`);
-                doc.text(`Payment: ${order.paymentMethod} (${order.paymentStatus})`);
-                doc.text('Items:');
-                order.productItems.forEach(item => {
-                    doc.text(`- ${item.productName} (Qty: ${item.quantity}, Price: ₹${item.total})`);
-                });
-            });
-
-            doc.end();
-        } else if (downloadFormat === 'excel') {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Sales Report');
-
-            // Add headers
-            worksheet.columns = [
-                { header: 'Order ID', key: 'orderId', width: 25 },
-                { header: 'User Name', key: 'userName', width: 20 },
-                { header: 'Email', key: 'email', width: 25 },
-                { header: 'Date', key: 'date', width: 15 },
-                { header: 'Total', key: 'total', width: 15 },
-                { header: 'Status', key: 'status', width: 15 },
-                { header: 'Payment Method', key: 'paymentMethod', width: 15 },
-                { header: 'Items', key: 'items', width: 40 },
-            ];
-
-            // Add summary
-            worksheet.addRow(['Summary']);
-            worksheet.addRow(['Total Orders', totalOrders]);
-            worksheet.addRow(['Total Items Sold', totalItemsSold]);
-            worksheet.addRow(['Total Sales', `₹${totalSales.toFixed(2)}`]);
-            worksheet.addRow([]);
-
-            // Add order data
-            orders.forEach(order => {
-                const items = order.productItems.map(item => `${item.productName} (Qty: ${item.quantity})`).join(', ');
-                worksheet.addRow({
-                    orderId: order._id.toString(),
-                    userName: order.userId.name,
-                    email: order.userId.email,
-                    date: order.createdAt.toISOString().split('T')[0],
-                    total: `₹${order.totalPrice || 0}`,
-                    status: order.status,
-                    paymentMethod: order.paymentMethod,
-                    items: items,
-                });
-            });
-
-            // Generate Excel file
-            res.setHeader(
-                'Content-Disposition',
-                `attachment; filename="sales_report_${reportType}_${Date.now()}.xlsx"`
-            );
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            await workbook.xlsx.write(res);
-            res.end();
-        } else {
-            return res.status(400).json({ error: 'Invalid download format' });
-        }
-    } catch (error) {
-        console.error('Error generating report:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        fetch(`/SearchProduct?${data.toString()}`, { method: 'GET' })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    displayProducts(response.products);
+                }
+            })
+            .catch(error => console.error('Error:', error));
     }
-};
+
+    function displayProducts(products) {
+    const productsGrid = document.querySelector('.row.g-4');
+    productsGrid.innerHTML = '';
+
+    if (products.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="col-12">
+                <div class="no-products">
+                    <p>No products found</p>
+                </div>
+            </div>`;
+        return;
+    }
+
+    products.forEach(pro => {
+        const productHTML = `
+            <div class="col-lg-4 col-md-6">
+                <div class="card product-card">
+                    <!-- Out of Stock Check -->
+                    ${pro.stock <= 0
+                        ? `<span class="sale-badge" style="background-color: red;">Out of Stock</span>`
+                        : `<span class="sale-badge">Sale</span>`}
+
+                    <!-- Wishlist Icon -->
+                    <div class="wishlist-icon" style="cursor: pointer;" data-product-id="${pro._id}">
+                        <i class="fa fa-heart-o" style="color: #ff6f61; font-size: 24px;"></i>
+                    </div>
+
+                    <!-- Product Image -->
+                    <a href="/loadProductPage/${pro._id}">
+                        <img src="/uploads/${pro.image[0]}" alt="${pro.name}" class="product-img">
+                    </a>
+
+                    <div class="card-body">
+                        <!-- Product Title -->
+                        <h5 class="product-title">${pro.name}</h5>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="current-price ms-2">₹ ${pro.price}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 d-flex justify-content-between">
+                            ${pro.stock > 0
+                                ? `<button style="color: #fef0f0;" class="btn btn-dark btn-sm add-to-cart-btn" data-product-id="${pro._id}">
+                                    Add to Cart
+                                   </button>`
+                                : `<button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>`}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        productsGrid.innerHTML += productHTML;
+    });
+}
 
 
-module.exports = {
-    adminLoginPage,
-    admindashboard,
-    adminHome,
-    getUsersList,
-    changeStatus,
-    adminLogout,
-    generateReport
-};
+ });
+
+    </script>
+
+
+ <script>
+    function addToCart(productId) {
+        console.log(productId);
+
+        const requestData = { productId };
+
+        fetch('/addCart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', 
+            },
+            body: JSON.stringify(requestData) 
+        })
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+
+            if (data.success) {
+                Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart!',
+                        text: 'The item has been successfully added to your cart.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+            } else {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: "Failed to add product!! Login / Register Please",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        })
+        .catch(error => {
+            Toastify({
+                text: "Error occurred while adding item to cart.",
+                duration: 3000,
+                backgroundColor: "red",
+                close: true,
+                position: "right",
+            }).showToast();
+        });
+    }
+</script>
+
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+ <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add to Cart functionality
+        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                const productId = event.target.getAttribute('data-product-id');
+                try {
+                    const response = await fetch('/addCart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ productId })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Added to Cart!',
+                            text: result.message,
+                            timer: 2000,
+                            showConfirmButton: false,
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed to Add!',
+                            text: result.message || 'Please Login to add items.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error adding to cart:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred. Please try again.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+  </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const wishlistIcons = document.querySelectorAll('.wishlist-btn');
+        const wishlistProducts = '<%= JSON.stringify(wishlistProducts) %>' 
+    
+        wishlistIcons.forEach(icon => {
+            const productId = icon.getAttribute('data-product-id');
+            const heartIcon = icon.querySelector('i');
+    
+            // Initialize heart state based on wishlist
+            if (wishlistProducts.includes(productId)) {
+                heartIcon.classList.remove('fa-heart-o');
+                heartIcon.classList.add('fa-heart');
+                icon.classList.add('active');
+            }
+    
+            icon.addEventListener('click', async function () {
+                const isActive = this.classList.contains('active');
+                this.classList.toggle('active');
+    
+                if (isActive) {
+                    heartIcon.classList.remove('fa-heart');
+                    heartIcon.classList.add('fa-heart-o');
+                } else {
+                    heartIcon.classList.remove('fa-heart-o');
+                    heartIcon.classList.add('fa-heart');
+                }
+    
+                try {
+                    const response = await fetch('/addToWish', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ productId })
+                    });
+    
+                    const result = await response.json();
+    
+                    if (!response.ok || !result.success) {
+                        console.log('Failed to update wishlist');
+                    }
+                } catch (error) {
+                    console.error('Error updating wishlist:', error);
+                }
+            });
+        });
+    });
+    </script>
+    
+
+  <script>
+    document.getElementById('clear-all').addEventListener('click', function() {
+    window.location.href = '/shopPage' 
+  });
+  </script>
+
+ </body>
+</html>
+
+<%-include('../layout/user/footer')%>	
+
+
+
+
+
+
+
+
+
+
+
+
+

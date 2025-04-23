@@ -417,17 +417,6 @@
                             <% } %>
                             
         
-                            <% if (order.status === 'Delivered' && order.productItems.length > 1) { %>
-                                <% if (item.status === 'Returned') { %>
-                                    <p class="return-msg" style="color: #06678d; font-weight: bold;">This product has already been returned.</p>
-                                <% } else { %>
-                                    <a href="/productReturn/<%= order._id %>/<%= item.productId._id %>">
-                                        <button type="button" class="return-button">Return Product</button>
-                                    </a>
-                                <% } %>
-                            <% } %>
-                            
-                            
                         </div>
                     </div>
                 <% }) %>
