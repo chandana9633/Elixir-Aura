@@ -277,8 +277,7 @@
             <% if (orders && orders.length > 0) { %>
                 <% orders.forEach(order => { %>
                     <div class="order-card">
-                        <h3><i class="fas fa-shopping-bag"></i> Order #<%= order._id %></h3>
-                        <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                        <h3><i class="fas fa-shopping-bag"></i> Order #<%= order._id.toString().slice(0, 8) %></h3>                        <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
                         <p><strong>Items:</strong> <%= order.totalQuantity %></p>
                         <p><strong>Total:</strong> ₹<%= order.totalPrice %></p>
                         <p><strong>Order Status:</strong> 

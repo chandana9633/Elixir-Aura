@@ -34,9 +34,7 @@ const downloadInvoice = async (req, res) => {
             doc.moveTo(startX, startY).lineTo(endX, endY).stroke();
         };
 
-        // ----------------------------
-        // 🔽 Company Info Section 🔽
-        // ----------------------------
+   
         doc
             .fontSize(16)
             .font('Helvetica-Bold')
@@ -49,11 +47,9 @@ const downloadInvoice = async (req, res) => {
             .text('Bangalore, Karnataka - 560001', 50, 85)
             .text('GSTIN: 29ABCDE1234F1Z5', 50, 100);
 
-        drawLine(50, 115, 560, 115); // Separator line
+        drawLine(50, 115, 560, 115); 
 
-        // ----------------------------
-        // 🔽 Invoice Header Section 🔽
-        // ----------------------------
+
         doc.fontSize(24).text('INVOICE', 50, 130, { align: 'center' });
         doc.fontSize(12).text(`Invoice #${orderId}`, { align: 'center' });
         doc.moveDown();
@@ -79,9 +75,7 @@ const downloadInvoice = async (req, res) => {
         doc.text(`Order #: ${orderId}`, rightColumnX, 195);
         doc.text(`Payment: ${formatText(order.paymentMethod)}`, rightColumnX, 210);
 
-        // ----------------------------
-        // 🔽 Table Header 🔽
-        // ----------------------------
+  
         const tableTop = 280;
         const tableWidth = 510;
         const columns = {

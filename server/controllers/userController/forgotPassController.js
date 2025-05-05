@@ -19,7 +19,7 @@ const fotgotPassemail = async(req,res) => {
         const email = req.body.email;
         let link = `http://localhost:5000/resetPassword/${email}`
         await sendForgotPassMail(email,link);
-        res.send("otp sended")
+        res.send("Reset password link has been sent to your email");
     }catch(error){
         console.log(error)
     }
@@ -59,7 +59,8 @@ const postResetPasswordPage = async (req, res) => {
             return res.status(404).send('User not found.');
         }
 
-        res.send('Password reset successfully.');
+        // res.send('Password reset successfully.');
+        res.redirect('/userLogin')
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error.');

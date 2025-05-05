@@ -203,7 +203,6 @@ body {
     }
 }
 
-
 .pagination {
     display: flex;
     justify-content: center;
@@ -431,12 +430,20 @@ body {
     });
 
     // Sort functionality
-    document.getElementById('sort-select').addEventListener('change', function () {
+   // Sort functionality
+   document.getElementById('sort-select').addEventListener('change', function () {
         const sortBy = this.value;
         const url = new URL(window.location.href);
-
         url.searchParams.set('sort', sortBy);
         window.location.href = url.toString();
+    });
+
+    // Set the selected option based on URL parameter
+    window.addEventListener('DOMContentLoaded', function () {
+        const url = new URL(window.location.href);
+        const sortBy = url.searchParams.get('sort') || 'popularity'; // Default to 'popularity' if no sort param
+        const select = document.getElementById('sort-select');
+        select.value = sortBy; // Set the select element's value to the URL's sort parameter
     });
 
     // Search functionality
@@ -566,7 +573,7 @@ body {
                 Swal.fire({
                     position: "top-end",
                     icon: "error",
-                    title: "Failed to add product!! Login / Register Please",
+                    title: "Stock Limit Reached",
                     showConfirmButton: false,
                     timer: 1500
                 });

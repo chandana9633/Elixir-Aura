@@ -44,19 +44,19 @@ route.post('/signIn', middleware.forwardAuthenticated, userController.signIn);
 route.get('/logout', userController.logout);
 route.post('/resendOtp', otpController.resendOtp);
 route.get('/forgotPassword', forgotPassController.fotgotPassPage);
-route.post('/forgotPassword', forgotPassController.fotgotPassemail);
+route.post('/forgot-Password', forgotPassController.fotgotPassemail);
 
 route.get('/resetPassword/:email',forgotPassController.resetPasswordPage)
 route.post('/resetPassword',forgotPassController.postResetPasswordPage)
 
 
 route.get('/loadProductPage/:id',productDetailsController.loadProductPage)
-route.get('/shopPage',productDetailsController.loadShopPage)
-route.post('/addToCart',productDetailsController.addCart)
+route.get('/shopPage',middleware.authenticated,productDetailsController.loadShopPage)
+route.post('/addToCart',middleware.authenticated,productDetailsController.addCart)
 route.post('/addToWishlist',productDetailsController.addWishlist)
 
 
-route.get('/profile',userProfileController.userProfile)
+route.get('/profile',middleware.authenticated,userProfileController.userProfile)
 route.post('/updateProfile',userProfileController.updateProfile)
 
 route.get('/addressPage',userAddressController.addAddressPage)
@@ -65,13 +65,14 @@ route.get('/editAddressPage/:addressId',userAddressController.editAddressPage)
 route.post('/updateAddress/:addressId', userAddressController.updateAddress);
 route.get('/deleteAddress/:addressId', userAddressController.deleteAddress);
 
-route.get('/cart',cartController.cartRender)
-route.post('/addCart',cartController.addToCart)
+route.get('/cart',middleware.authenticated, cartController.cartRender)
+// route.get('/cart', cartController.cartRender)
+route.post('/addCart',middleware.authenticated,cartController.addToCart)
 route.post('/removeFromCart',cartController.removeFromCart)
 route.post('/updateCartQuantity/:id',cartController.updateCartQuantity)
 route.delete('/clearCart',cartController.clearCart)
 
-route.get('/checkOut',checkutController.checkOutPage)
+route.get('/checkOut',middleware.authenticated,checkutController.checkOutPage)
 route.post('/addNewAddress',checkutController.addNewAddres)
 route.put('/updateAddress/:addressId',checkutController.updateAddress)
 route.delete('/removeAddress/:addressId',checkutController. removeAddress);
@@ -89,7 +90,7 @@ route.get('/SearchProduct',productDetailsController.SearchingProduct)
 
 
 route.get('/wishlist',wishlistController.wishlistPage)
-route.post('/addToWish',wishlistController.addToWishlist)
+route.post('/addToWish',middleware.authenticated,wishlistController.addToWishlist)
 route.post('/wishlist/remove',wishlistController.removeWishlist)
 route.get('/razor-key',orderController.RazorKey)
 route.post('/razor-order',orderController.RazorOrder)
@@ -108,7 +109,7 @@ route.get('/wallet',walletController.walletPage)
 
 route.get('/coupon',couponUserController.couponPage) 
 route.post('/applyCoupon',couponUserController.applyCoupon) 
-route.post('/removeCoupon',couponUserController.removeCoupon) 
+route.post('/remove-coupon',couponUserController.removeCoupon) 
 
 route.get('/downloadInvoice/:orderId',downloadInvoiceController.downloadInvoice)
 

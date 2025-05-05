@@ -1,3 +1,5 @@
+<%-include('../layout/admin/adminHeader')%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,33 +8,28 @@
     <title>Admin User Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .btn-block,
-        .btn-unblock {
+        .btn-toggle {
             color: white;
-            width: 80px;
+            width: 100px;
             font-weight: bold;
             border: none;
+            transition: background-color 0.3s;
         }
 
-        .btn-block {
-            background-color: #ff4d4d; 
+        .btn-toggle.block {
+            background-color: #ff4d4d;
         }
 
-        .btn-block:hover {
+        .btn-toggle.block:hover {
             background-color: #ff3333;
         }
 
-        .btn-unblock {
-            background-color: #4CAF50; 
+        .btn-toggle.unblock {
+            background-color: #4CAF50;
         }
 
-        .btn-unblock:hover {
+        .btn-toggle.unblock:hover {
             background-color: #45a049;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
         }
 
         .table {
@@ -40,7 +37,7 @@
         }
 
         .table thead {
-            background-color: #676767; 
+            background-color: #676767;
             color: white;
         }
 
@@ -57,11 +54,11 @@
         }
 
         .status.Active {
-            color: #28a745; 
+            color: #28a745;
         }
 
         .status.Blocked {
-            color: #dc3545; 
+            color: #dc3545;
         }
 
         .pagination {
@@ -69,11 +66,9 @@
             justify-content: center;
             margin-top: 20px;
         }
-
     </style>
 </head>
 <body>
-    <%- include('../layout/admin/adminHeader') %>  
 
     <div class="container mt-5">
         <h2>User Management</h2>
@@ -96,16 +91,18 @@
                         <td><%= user.email %></td>
                         <td><%= new Date(user.date).toLocaleDateString() %></td>
                         <td class="status <%= user.status %>"><%= user.status %></td>
-                        <td class="action-buttons">
-                            <button class="btn btn-block" onclick="changeStatus('<%= user._id %>', 'Blocked')">Block</button>
-                            <button class="btn btn-unblock" onclick="changeStatus('<%= user._id %>', 'Active')">Unblock</button>
+                        <td>
+                            <button 
+                                class="btn btn-toggle <%= user.status === 'Blocked' ? 'unblock' : 'block' %>" 
+                                onclick="changeStatus('<%= user._id %>', '<%= user.status === 'Blocked' ? 'Active' : 'Blocked' %>')" style="color: white">
+                                <%= user.status === 'Blocked' ? 'Unblock' : 'Block' %>
+                            </button>
                         </td>
                     </tr>
                 <% }); %>
             </tbody>
         </table>
     
-        <!-- Pagination Links -->
         <nav aria-label="Page navigation">
             <ul class="pagination">
                 <% for (let i = 1; i <= totalPages; i++) { %>
@@ -148,17 +145,18 @@
                         if (data.success) {
                             const userRow = document.getElementById(`user-${userId}`);
                             const statusCell = userRow.querySelector('.status');
-                            statusCell.textContent = data.status; 
+                            const toggleButton = userRow.querySelector('.btn-toggle');
+                            
+                            // Update status 
+                            statusCell.textContent = data.status;
                             statusCell.classList.toggle('Blocked', newStatus === 'Blocked');
                             statusCell.classList.toggle('Active', newStatus === 'Active');
     
-                            if (newStatus === 'Blocked') {
-                                userRow.querySelector('.btn-block').disabled = true;
-                                userRow.querySelector('.btn-unblock').disabled = false;
-                            } else {
-                                userRow.querySelector('.btn-block').disabled = false;
-                                userRow.querySelector('.btn-unblock').disabled = true;
-                            }
+                            // Update button 
+                            toggleButton.textContent = newStatus === 'Blocked' ? 'Unblock' : 'Block';
+                            toggleButton.classList.toggle('block', newStatus === 'Active');
+                            toggleButton.classList.toggle('unblock', newStatus === 'Blocked');
+                            toggleButton.setAttribute('onclick', `changeStatus('${userId}', '${newStatus === 'Blocked' ? 'Active' : 'Blocked'}')`);
 
                             Swal.fire('Success', `User status changed to ${newStatus.toLowerCase()}`, 'success');
                         } else {

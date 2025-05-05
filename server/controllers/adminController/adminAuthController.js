@@ -12,42 +12,40 @@ const adminLoginPage = async (req, res) => {
     res.render('admin/adminLogin');
 };
 
-
 const admindashboard = async (req, res) => {
   try {
-        // top-selling Products
+    // Top-selling Products
     const topProducts = await Order.aggregate([
       { $unwind: "$productItems" },
       {
-          $group: {
-              _id: "$productItems.productId",
-              totalSales: { $sum: "$productItems.quantity" }, 
-          },
+        $group: {
+          _id: "$productItems.productId",
+          totalSales: { $sum: "$productItems.quantity" },
+        },
       },
-      { $sort: { totalSales: -1 } }, 
-      { $limit: 10 }, 
+      { $sort: { totalSales: -1 } },
+      { $limit: 5 }, 
       {
-          $lookup: {
-              from: "products", 
-              localField: "_id",
-              foreignField: "_id", 
-              as: "productDetails",
-          },
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
+        },
       },
-      { $unwind: "$productDetails" }, 
+      { $unwind: "$productDetails" },
       {
-          $project: {
-              _id: 1,
-              totalSales: 1,
-              productName: "$productDetails.productName",
-              productImage: "$productDetails.image",
-              productPrice: "$productDetails.price",
-          },
+        $project: {
+          _id: 1,
+          totalSales: 1,
+          productName: "$productDetails.productName",
+          productImage: "$productDetails.image",
+          productPrice: "$productDetails.price",
+        },
       },
-  ]);
-  
+    ]);
 
-    // top-selling categories
+    // Top-selling Categories
     const topCategories = await Order.aggregate([
       { $unwind: "$productItems" },
       {
@@ -66,7 +64,7 @@ const admindashboard = async (req, res) => {
         },
       },
       { $sort: { totalSales: -1 } },
-      { $limit: 10 },
+      { $limit: 5 },
       {
         $lookup: {
           from: "categories",
@@ -85,10 +83,9 @@ const admindashboard = async (req, res) => {
       },
     ]);
 
-     res.render('admin/adminIndex', {
+    res.render('admin/adminIndex', {
       topProducts,
       topCategories,
-      
     });
     return;
   } catch (error) {
@@ -96,7 +93,6 @@ const admindashboard = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
-
 
 
 const admin='admin@gmail.com'

@@ -235,7 +235,9 @@
                             <div class="out-of-stock" style="color: red; font-weight: bold;">Out of Stock</div>
                         <% } else { %>
                             <div class="button-container" style="display: flex; gap: 10px; align-items: center;">
-                                <button onclick="addToCart('<%- pro._id %>')" class="primary-btn pc-btn">Add to cart</button>
+                                <button onclick="addToCart('<%- pro._id %>',' <%- pro.stock %>')" 
+                                        class="primary-btn pc-btn" 
+                                        data-stock="<%- pro.stock %>">Add to cart</button>
                                 <div class=".wishlist-icon" style="cursor: pointer;" data-product-id="<%- pro._id %>">
                                     <i class="fa fa-heart-o" style="color: #ff6f61; font-size: 24px;"></i>
                                 </div>
@@ -326,19 +328,29 @@
 
 </script>
 
-
 <script>
-    function addToCart(productId) {
-        console.log(productId);
+    function addToCart(productId, stock = null) {
+        console.log('Adding to cart:', productId, 'Stock:', stock);
+
+        // Frontend stock check (if stock is provided)
+        if (stock !== null && stock <= 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Out of Stock',
+                text: 'Sorry, this product is out of stock.',
+                confirmButtonColor: '#ffc107'
+            });
+            return;
+        }
 
         const requestData = { productId };
 
         fetch('/addCart', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', 
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestData) 
+            body: JSON.stringify(requestData)
         })
         .then(response => {
             return response.json();
@@ -348,33 +360,68 @@
 
             if (data.success) {
                 Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Cart!',
-                        text: 'The item has been successfully added to your cart.',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
-            } else {
-                Swal.fire({
-                    position: "top-end",
-                    icon: "error",
-                    title: "Failed to add product!! Login / Register Please",
+                    icon: 'success',
+                    title: 'Added to Cart!',
+                    text: 'The item has been successfully added to your cart.',
+                    timer: 2000,
                     showConfirmButton: false,
-                    timer: 1500
                 });
+            } else {
+                // Handle specific error messages
+                if (data.message.includes('out of stock')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Out of Stock',
+                        text: data.message,
+                        confirmButtonColor: '#ffc107'
+                    });
+                } else if (data.message.includes('units left in stock')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stock Limit Reached',
+                        text: data.message,
+                        confirmButtonColor: '#ffc107'
+                    });
+                } else if (data.message.includes('up to 10 units')) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Maximum Quantity Reached',
+                        text: data.message,
+                        confirmButtonColor: '#ffc107'
+                    });
+                } else if (data.message.includes('login')) {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Please Login',
+                        text: data.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to add product to cart.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
             }
         })
         .catch(error => {
             Toastify({
-                text: "Error occurred while adding item to cart.",
+                text: 'Error occurred while adding item to cart.',
                 duration: 3000,
-                backgroundColor: "red",
+                backgroundColor: 'red',
                 close: true,
-                position: "right",
+                position: 'right',
             }).showToast();
         });
     }
 </script>
+
 
 <script>
  document.addEventListener('DOMContentLoaded', () => {

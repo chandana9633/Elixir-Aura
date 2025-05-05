@@ -4,65 +4,70 @@ const Cart = require('../../models/user/cartModel')
 const CategoryOffer = require('../../models/admin/categoryOfferModel')
 
 
-const cartRender = async (req, res) => {
-    try {
-        const userId = req.session?.user?.id;
-        console.log('user id',userId)
-        if (!userId) {
-            return res.status(404).json({ msg: "Please Login" });
+    const cartRender = async (req, res) => {
+        try {
+            const userId = req.session?.user?.id;
+            console.log('user id',userId)
+            if (!userId) {
+                return res.status(404).json({ msg: "Please Login" });
+            }
+
+            const cart = await Cart.findOne({ userId }).populate('items.productId');
+            if (!cart || cart.items.length === 0) {
+                return res.render('user/cartPage', { user: req.session.user, cartItems: [], totalAmount: 0 });
+            }
+
+            const currentDate = new Date();
+
+            const categoryIds = cart.items.map(item => item.productId.category._id);
+            const categoryOffers = await CategoryOffer.find({
+                categoryId: { $in: categoryIds },
+                endDate: { $gte: currentDate }
+            });
+
+            const offersMap = categoryOffers.reduce((map, offer) => {
+                map[offer.categoryId] = offer.discountPercentage;
+                return map;
+            }, {});
+
+            let totalAmount = 0;
+            if (cart?.couponId) {
+                cart.totalAmount = totalAmount - cart.couponDiscount;
+                totalAmount -= cart.couponDiscount
+            }
+
+
+            await cart.save();
+
+            res.render('user/cartPage', {
+                user: req.session.user,
+                cartItems: cart.items,
+                totalAmount: cart.totalAmount,
+            });
+
+        } catch (error) {
+            console.error('Error rendering cart page:', error);
+            res.status(500).send('Server error');
         }
-
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
-        if (!cart || cart.items.length === 0) {
-            return res.render('user/cartPage', { user: req.session.user, cartItems: [], totalAmount: 0 });
-        }
-
-        const currentDate = new Date();
-
-        const categoryIds = cart.items.map(item => item.productId.category._id);
-        const categoryOffers = await CategoryOffer.find({
-            categoryId: { $in: categoryIds },
-            endDate: { $gte: currentDate }
-        });
-
-        const offersMap = categoryOffers.reduce((map, offer) => {
-            map[offer.categoryId] = offer.discountPercentage;
-            return map;
-        }, {});
-
-        let totalAmount = 0;
-        if (cart?.couponId) {
-            cart.totalAmount = totalAmount - cart.couponDiscount;
-            totalAmount -= cart.couponDiscount
-        }
-
-
-        await cart.save();
-
-        res.render('user/cartPage', {
-            user: req.session.user,
-            cartItems: cart.items,
-            totalAmount: cart.totalAmount,
-        });
-
-    } catch (error) {
-        console.error('Error rendering cart page:', error);
-        res.status(500).send('Server error');
-    }
-};
-
-
+    };
 
 const addToCart = async (req, res) => {
     try {
         const userId = req.session?.user?.id;
-        if (!userId) return res.status(404).json({ success: false, message: 'Please Login' });
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Please login to add items to your cart.' });
+        }
 
         const { productId } = req.body;
-        const product = await Product.findById(productId);
+        const product = await Product.findById(productId).populate('category');
 
         if (!product) {
-            return res.status(404).json({ success: false, message: 'Product not found' });
+            return res.status(404).json({ success: false, message: 'Product not found.' });
+        }
+
+        // Check if product is out of stock
+        if (product.stock <= 0) {
+            return res.status(400).json({ success: false, message: 'Sorry, this product is out of stock.' });
         }
 
         const maxQtyPerUser = 10;
@@ -74,62 +79,79 @@ const addToCart = async (req, res) => {
 
         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId.toString());
 
+        // Calculate discount percentage (use higher of discountprice or categoryOffer)
         let discountPercentage = 0;
         if (product.discountprice) {
-            discountPercentage = product.discountprice
-        } else if (product.categoryOffer) {
+            discountPercentage = product.discountprice;
+        }
+        if (product.categoryOffer && product.categoryOffer > discountPercentage) {
             discountPercentage = product.categoryOffer;
         }
 
-        let offerPrice = 0;
-        if (discountPercentage) {
-            offerPrice = Math.round(product.price - (product.price * (discountPercentage / 100)));
-        }
+        // Calculate offer price (discounted price per unit)
+        const offerPrice = discountPercentage
+            ? Math.round(product.price - (product.price * (discountPercentage / 100)))
+            : product.price;
 
         if (itemIndex === -1) {
+            // Check if adding 1 exceeds or equals stock
+            if (1 >= product.stock) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Sorry, only ${product.stock} units left in stock.`,
+                });
+            }
             cart.items.push({
                 productId,
                 quantity: 1,
-                offerPrice: offerPrice,
-                total: product.price,
-                actualPrice: product.price
+                offerPrice: offerPrice, // Total discounted price for 1 unit
+                total: product.price, // Total original price for 1 unit
+                actualPrice: product.price // Original price per unit
             });
         } else {
             const item = cart.items[itemIndex];
 
-            if (item.quantity + 1 > maxQtyPerUser) {
+            // Check if incrementing quantity exceeds maxQtyPerUser or stock
+            if (item.quantity >= maxQtyPerUser) {
                 return res.status(400).json({
                     success: false,
                     message: `You can only add up to ${maxQtyPerUser} units of this product.`,
                 });
             }
 
+            if (item.quantity + 1 >= product.stock) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Sorry, only ${product.stock} units left in stock.`,
+                });
+            }
+
             item.quantity += 1;
-            item.total = product.price * item.quantity;
-            item.offerPrice += offerPrice
+            item.total = product.price * item.quantity; // Total original price
+            item.offerPrice = offerPrice * item.quantity; // Total discounted price
         }
 
-        let grandTotal = 0
-        let discount = 0
+        // Recalculate cart totals
+        let grandTotal = 0;
+        let totalAmount = 0;
 
         for (let item of cart.items) {
-            grandTotal += item.total
-            discount += item.offerPrice
-
+            grandTotal += item.total; // Sum of original prices
+            totalAmount += item.offerPrice; // Sum of discounted prices
         }
 
-        cart.grandTotal = grandTotal
-        cart.discount = grandTotal - discount
-        cart.totalAmount = discount
+        cart.grandTotal = grandTotal;
+        cart.discount = grandTotal - totalAmount; // Total savings
+        cart.totalAmount = totalAmount; // Final amount after discounts
 
         await cart.save();
         return res.status(200).json({ success: true, message: `${product.name} added to cart.` });
-
     } catch (error) {
         console.error('Error adding to cart:', error);
-        return res.status(500).json({ success: false, message: 'Server error' });
+        return res.status(500).json({ success: false, message: 'Server error.' });
     }
 };
+
 
 const removeFromCart = async (req, res) => {
     try {

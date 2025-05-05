@@ -372,7 +372,7 @@
 <body>
     <div class="order-details-container">
         <header class="order-header">
-            <h1><i class="fas fa-shopping-cart"></i>Order #<%= order._id %></h1>
+            <h1><i class="fas fa-shopping-cart"></i>Order #<%= order._id.toString().slice(0, 8) %></h1>
             <p>Placed on: <strong><%= new Date(order.createdAt).toLocaleDateString() %></strong></p>
             <a href="/orders" class="back-link"><i class="fas fa-arrow-left"></i> Back to Orders</a>
         </header>
@@ -527,7 +527,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   async function cancelProduct(orderId, productId) {
-    // Show confirmation dialog
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: 'Do you want to cancel this product from the order?',
@@ -539,7 +538,6 @@
       cancelButtonText: 'No',
     });
 
-    // Proceed only if the user confirms
     if (result.isConfirmed) {
       try {
         const response = await fetch(`/orders/cancel-item/${orderId}/${productId}`, {
@@ -553,7 +551,6 @@
         const data = await response.json();
 
         if (response.ok && data.success) {
-          // Show success popup
           await Swal.fire({
             title: 'Cancelled!',
             text: data.message || 'The product has been cancelled successfully.',
@@ -561,7 +558,6 @@
             confirmButtonText: 'OK',
           });
 
-          // Update UI: Disable button and change text to "Cancelled"
           const button = document.querySelector(
             `button[data-perticularOrder-id="${orderId}"][data-perticulrPro-id="${productId}"]`
           );
@@ -571,7 +567,6 @@
             button.classList.add('disabled');
           }
         } else {
-          // Show error popup
           await Swal.fire({
             title: 'Error!',
             text: data.message || 'Failed to cancel the product.',
@@ -580,7 +575,6 @@
           });
         }
       } catch (error) {
-        // Show error popup for network or unexpected errors
         console.error('Error cancelling product:', error);
         await Swal.fire({
           title: 'Error!',

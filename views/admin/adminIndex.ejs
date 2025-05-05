@@ -128,7 +128,7 @@
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="yearly">Yearly</option>
-                    <option value="custom">Custom Date Range</option>
+                    <!-- <option value="custom">Custom Date Range</option> -->
                   </select>
                 </div>
                 <div class="form-group" id="customDateRange" style="display:none;">
@@ -230,7 +230,7 @@
     <script>
         let myChart = null;
 
-        document.getElementById('reportType').addEventListener('change', function () {
+    document.getElementById('reportType').addEventListener('change', function () {
     const reportType = this.value;
     document.getElementById('customDateRange').style.display = reportType === 'custom' ? 'block' : 'none';
   });
@@ -356,5 +356,8 @@
             renderChart(filterType);
         });
     </script>
+
+
+
 </body>
 </html>

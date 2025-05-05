@@ -8,71 +8,178 @@ const CategoryOffer=require('../../models/admin/categoryOfferModel')
 
   
 
+// const checkOutPage = async (req, res) => {
+//     try {
+//         const userId = req.session.user?.id;
+//         // console.log(userId,'hy userrrrrrrrrrrrrr');
+        
+//         if (!userId) {
+//             return res.status(400).json({ error: 'User not authenticated' });
+//         }
+        
+//         const user = await User.findById(userId);
+//         if (!user) return res.status(404).json({ error: 'User not found' });
+
+        
+//         const address = user.address || {};
+//         const cart = await Cart.findOne({ userId }).populate('items.productId');
+//         if (!cart || cart.items.length === 0) {
+//             return res.status(404).json({ error: 'Cart is empty' });
+//         }
+
+//         // const wallet = await Wallet.findOne({ userId });
+//         // console.log(wallet,'waaaaaaaaaalet');
+        
+//         // if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
+
+
+//         let wallet = await Wallet.findOne({ userId });
+//                 // console.log(wallet,'waaaaaaaaaalet');
+
+//         if (!wallet) {
+//         wallet = new Wallet({ userId, balance: 0 });
+//         await wallet.save();
+//         }
+
+
+//         const currentDate = new Date();
+
+//         // Category Offers
+//         const categoryOffers = await CategoryOffer.find({
+//             endDate: { $gte: currentDate }
+//         }).populate('categoryId');
+
+//         let categoryDiscountAmount = 0;
+
+//         for (const item of cart.items) {
+//             const matchedOffer = categoryOffers.find(offer =>
+//                 item.productId.category &&
+//                 offer.categoryId._id.toString() === item.productId.category._id.toString()
+//             );
+
+//             if (matchedOffer) {
+//                 const discountPerUnit = Math.floor(item.productId.price * (matchedOffer.discountPercentage / 100));
+//                 categoryDiscountAmount += discountPerUnit * item.quantity;
+//             }
+//         }
+
+//         // Coupon Handling
+//         let couponDiscount = 0;
+//         let isCouponApplied = false;
+
+//         if (cart.couponId) {
+//             const coupon = await Coupon.findById(cart.couponId);
+
+//             if (coupon && cart.totalAmount >= coupon.minAmount && cart.totalAmount <= coupon.maxAmount) {
+//                 couponDiscount = Math.floor((coupon.discountPercentage / 100) * cart.totalAmount);
+//                 isCouponApplied = true;
+//             } else {
+//                 cart.couponId = null;
+//                 cart.couponDiscount = 0;
+//                 await cart.save();
+//             }
+//         }
+
+//         const finalAmount = Math.max(Math.floor(cart.totalAmount - categoryDiscountAmount - couponDiscount), 0);
+
+//         res.render('user/checkoutPage', {
+//             user,
+//             cart,
+//             cartItems: cart.items,
+//             address,
+//             wallet,
+//             categoryOffer: categoryOffers,
+//             discountAmount: categoryDiscountAmount,
+//             couponDiscount: isCouponApplied ? couponDiscount : 0,
+//             finalAmount
+//         });
+//     } catch (error) {
+//         console.error('Error on checkout page:', error);
+//         res.status(500).json({ error: 'Server error' });
+//     }
+// };
+
+
 const checkOutPage = async (req, res) => {
     try {
         const userId = req.session.user?.id;
-        console.log(userId,'hy userrrrrrrrrrrrrr');
-        
         if (!userId) {
             return res.status(400).json({ error: 'User not authenticated' });
         }
-        
+
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        
         const address = user.address || {};
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         if (!cart || cart.items.length === 0) {
             return res.status(404).json({ error: 'Cart is empty' });
         }
 
-        // const wallet = await Wallet.findOne({ userId });
-        // console.log(wallet,'waaaaaaaaaalet');
-        
-        // if (!wallet) return res.status(404).json({ error: 'Wallet not found' });
-
-
         let wallet = await Wallet.findOne({ userId });
-                // console.log(wallet,'waaaaaaaaaalet');
-
         if (!wallet) {
-        wallet = new Wallet({ userId, balance: 0 });
-        await wallet.save();
+            wallet = new Wallet({ userId, balance: 0 });
+            await wallet.save();
         }
-
 
         const currentDate = new Date();
 
-        // Category Offers
+        // Fetch category offers
         const categoryOffers = await CategoryOffer.find({
             endDate: { $gte: currentDate }
         }).populate('categoryId');
 
-        let categoryDiscountAmount = 0;
+        // Calculate discounts for each cart item
+        const cartItemsWithDiscounts = cart.items.map(item => {
+            const product = item.productId;
+            let discountedPrice = product.price;
 
-        for (const item of cart.items) {
-            const matchedOffer = categoryOffers.find(offer =>
-                item.productId.category &&
-                offer.categoryId._id.toString() === item.productId.category._id.toString()
+            // Apply category offer if available
+            const matchedCategoryOffer = categoryOffers.find(offer =>
+                product.category &&
+                offer.categoryId._id.toString() === product.category._id.toString()
             );
-
-            if (matchedOffer) {
-                const discountPerUnit = Math.floor(item.productId.price * (matchedOffer.discountPercentage / 100));
-                categoryDiscountAmount += discountPerUnit * item.quantity;
+            let categoryDiscount = 0;
+            if (matchedCategoryOffer) {
+                categoryDiscount = Math.floor(product.price * (matchedCategoryOffer.discountPercentage / 100));
+                discountedPrice = Math.max(product.price - categoryDiscount, 0);
             }
-        }
 
-        // Coupon Handling
+            // Apply product-specific discount if available (assuming product.discountprice exists)
+            let productDiscount = 0;
+            if (product.discountprice && product.discountprice > 0) {
+                productDiscount = Math.floor(product.price * (product.discountprice / 100));
+                discountedPrice = Math.min(discountedPrice, product.price - productDiscount);
+            }
+
+            const itemTotal = discountedPrice * item.quantity;
+
+            return {
+                productId: product._id,
+                name: product.name,
+                price: product.price,
+                quantity: item.quantity,
+                categoryDiscount,
+                productDiscount,
+                discountedPrice,
+                itemTotal
+            };
+        });
+
+        // Calculate subtotal (sum of item totals after discounts)
+        const subtotal = cartItemsWithDiscounts.reduce((acc, item) => acc + item.itemTotal, 0);
+
+        // Coupon handling
         let couponDiscount = 0;
         let isCouponApplied = false;
+        let couponCode = null;
 
         if (cart.couponId) {
             const coupon = await Coupon.findById(cart.couponId);
-
-            if (coupon && cart.totalAmount >= coupon.minAmount && cart.totalAmount <= coupon.maxAmount) {
-                couponDiscount = Math.floor((coupon.discountPercentage / 100) * cart.totalAmount);
+            if (coupon && subtotal >= coupon.minAmount && subtotal <= coupon.maxAmount) {
+                couponDiscount = Math.floor((coupon.discountPercentage / 100) * subtotal);
                 isCouponApplied = true;
+                couponCode = coupon.code;
             } else {
                 cart.couponId = null;
                 cart.couponDiscount = 0;
@@ -80,26 +187,32 @@ const checkOutPage = async (req, res) => {
             }
         }
 
-        const finalAmount = Math.max(Math.floor(cart.totalAmount - categoryDiscountAmount - couponDiscount), 0);
+        // Calculate final amount
+        const finalAmount = Math.max(subtotal - couponDiscount, 0);
+
+        // Update cart with computed values
+        cart.totalAmount = subtotal;
+        cart.couponDiscount = couponDiscount;
+        await cart.save();
 
         res.render('user/checkoutPage', {
             user,
             cart,
-            cartItems: cart.items,
+            cartItems: cartItemsWithDiscounts,
             address,
             wallet,
-            categoryOffer: categoryOffers,
-            discountAmount: categoryDiscountAmount,
-            couponDiscount: isCouponApplied ? couponDiscount : 0,
-            finalAmount
+            subtotal: Math.round(subtotal),
+            couponDiscount: Math.round(couponDiscount),
+            finalAmount: Math.round(finalAmount),
+            isCouponApplied,
+            couponCode,
+            categoryOffers
         });
     } catch (error) {
         console.error('Error on checkout page:', error);
         res.status(500).json({ error: 'Server error' });
     }
 };
-
-
 
 
 

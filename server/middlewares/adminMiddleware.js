@@ -1,6 +1,6 @@
 const isAdminAuthenticated = (req, res, next) => {
     if (req.session.admin) {
-        console.log('======= isauthenticated ======',req.session.admin);
+        // console.log('======= isauthenticated ======',req.session.admin);
         return next()
     }
     res.redirect('/admin/adminLogin')

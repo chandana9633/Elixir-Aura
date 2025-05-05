@@ -327,24 +327,14 @@
         </div>
 
         <div class="summary-section">
-        <h3>Order Summary</h3>
-        <% cart.items.forEach((item) => { 
-            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
-            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
-            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
-            const itemTotal = finalDiscountedPrice * item.quantity;
-        %>
-            <div class="summary-item">
-                <span><%= item.productId.name %>:</span>
-                
-                <span><%= item.quantity %> x ₹<%= Math.round(item.actualPrice) %></span>
-                
-                <span>= ₹<%= Math.round(cart.grandTotal) %></span>
-            </div>
-        <% }); %>
-
-
-    </div>
+            <h3>Order Summary</h3>
+            <% cartItems.forEach((item) => { %>
+                <div class="summary-item">
+                    <span><%= item.name %>:</span>
+                    <span><%= item.quantity %> x ₹<%= Math.round(item.discountedPrice) %> = ₹<%= Math.round(item.itemTotal) %></span>
+                </div>
+            <% }); %>
+        </div>
 
     <hr />
 
@@ -374,28 +364,12 @@
 
 <div class="summary-item">
     <span>Subtotal (<%= cartItems.length %> items)</span>
-    <span>
-        ₹<%= Math.round(cartItems.reduce((acc, item) => {
-            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
-            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
-            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
-            return acc + (finalDiscountedPrice * item.quantity);
-        }, 0)) %>
-
-        
-    </span>
+    <span>₹<%= subtotal %></span>
 </div>
 
 <div class="summary-item">
     <span>Total Amount:</span>
-    <span id="grandTotal"> 
-        ₹<%= Math.round(cartItems.reduce((acc, item) => {
-            const categoryDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.categoryOfferamount || 0) / 100);
-            const productDiscountedPrice = item.productId.price - (item.productId.price * (item.productId.discountprice || 0) / 100);
-            const finalDiscountedPrice = Math.min(categoryDiscountedPrice, productDiscountedPrice);
-            return acc + (finalDiscountedPrice * item.quantity);
-        }, 0) - (cart?.couponDiscount || 0)) %>
-    </span>
+    <span id="grandTotal">₹<%= finalAmount %></span>
 </div>
         <div class="payment-section">
             <h3>Payment Method</h3>
@@ -824,57 +798,78 @@ function validateAddressForm(formData) {
 
 </script>
 
-<script>document.getElementById('apply-coupon-btn').addEventListener('click', async () => {
-    const couponCode = document.getElementById('coupon-code').value;
-    const response = await fetch('/applyCoupon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ couponCode }),
+<script>
+    document.getElementById('apply-coupon-btn').addEventListener('click', async () => {
+    const couponCode = document.getElementById('coupon-code').value.trim();
+    const couponMessage = document.getElementById('coupon-message');
+    const couponError = document.getElementById('coupon-error');
+    const applyButton = document.getElementById('apply-coupon-btn');
+    const removeButton = document.getElementById('remove-coupon-btn');
+
+    couponMessage.style.display = 'none';
+    couponError.style.display = 'none';
+
+    try {
+        const response = await fetch('/applyCoupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ couponCode }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('coupon-dis').innerText = `- ₹${Math.round(result.data.discount)}`;
+            document.getElementById('grandTotal').innerText = `₹${Math.round(result.data.newTotal)}`;
+
+            couponMessage.style.display = 'block';
+            couponMessage.innerText = 'Coupon Applied Successfully!';
+
+            applyButton.style.display = 'none';
+            removeButton.style.display = 'inline';
+        } else {
+            couponError.style.display = 'block';
+            couponError.innerText = result.message;
+        }
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        couponError.style.display = 'block';
+        couponError.innerText = 'Failed to apply coupon. Please try again.';
+    }
     });
 
-    const result = await response.json();
+    document.getElementById('remove-coupon-btn').addEventListener('click', async () => {
+    const couponMessage = document.getElementById('coupon-message');
+    const couponError = document.getElementById('coupon-error');
+    const applyButton = document.getElementById('apply-coupon-btn');
+    removeButton = document.getElementById('remove-coupon-btn');
 
-    console.log(result);
-    
+    couponMessage.style.display = 'none';
+    couponError.style.display = 'none';
 
-    if (result.success) {
+    try {
+        const response = await fetch('/remove-coupon', { method: 'POST' });
+        const result = await response.json();
 
-        console.log(result.data.newTotal,'=========');
-        
+        if (result.success) {
+            document.getElementById('coupon-code').value = '';
+            document.getElementById('coupon-dis').innerText = '₹0';
+            document.getElementById('grandTotal').innerText = `₹${Math.round(result.data.newTotal)}`;
 
-        document.getElementById('coupon-message').style.display = 'block';
-        document.getElementById('coupon-message').innerText = 'Coupon Applied Successfully!';
-
-
-        document.getElementById('coupon-dis').innerText = `- ₹${result.data.discount}`;
-        document.getElementById('grandTotal').innerText = ` ₹${result.data.newTotal}`;
-        
-
-        document.getElementById('coupon-discount').innerText = `- ₹${result.discount}`;
-        document.getElementById('final-total').innerText = `₹${result.finalAmount}`;
-        document.getElementById('remove-coupon-btn').style.display = 'inline';
-       
-    } else {
-        document.getElementById('coupon-error').style.display = 'block';
-        document.getElementById('coupon-error').innerText = result.message;
-    }
-});
-
-document.getElementById('remove-coupon-btn').addEventListener('click', async () => {
-    const response = await fetch('/remove-coupon', { method: 'POST' });
-
-    const result = await response.json();
-
-    if (result.success) {
-        document.getElementById('coupon-message').style.display = 'none';
-        document.getElementById('coupon-discount').innerText = '₹0.00';
-        document.getElementById('final-total').innerText = `₹${result.finalAmount}`;
-        document.getElementById('remove-coupon-btn').style.display = 'none';
+            applyButton.style.display = 'inline';
+            removeButton.style.display = 'none';
+        } else {
+            couponError.style.display = 'block';
+            couponError.innerText = result.message;
+        }
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        couponError.style.display = 'block';
+        couponError.innerText = 'Failed to remove coupon. Please try again.';
     }
 });
 
 </script>
-
-
 </body>
 </html>
+
